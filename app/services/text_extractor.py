@@ -9,8 +9,4 @@ def extract_text(file_path):
             if page_text:
                 all_text += page_text + "\n"
 
-    return {
-        "filename": file_path.name,
-        "text_length": len(all_text),
-        "preview": all_text[:500]
-    }
+    return all_text
