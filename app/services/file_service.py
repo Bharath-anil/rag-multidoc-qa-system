@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from . import text_extractor,text_cleaner,chunk_service,embedding_service
+from . import text_extractor,text_cleaner,chunk_service,embedding_service,generation_service
 
 
 UPLOAD_DIR = Path("uploads")
@@ -20,13 +20,32 @@ def process_file(file):
     cleaned = text_cleaner.clean_data(raw)
     chunks = chunk_service.chunk_data(cleaned)
     embedded_data = embedding_service.embed_chunks(chunks)
-    retreive_k_elements = embedding_service.retrieve_top_k("What is API layer",chunks,embedded_data)
+    question = "What is a docker"
+    top_k = embedding_service.retrieve_top_k(
+        question,
+        chunks,
+        embedded_data
+    )
+
+    top_score = top_k[0]["score"]
+
+    if top_score < 0.3:  #Does make sure that LLM does not hallucinate and say non related answers
+        return {
+            "message": "Question not relevant to document.",
+            "top_score": top_score
+        }
+    top_chunks = [item["chunk"] for item in top_k]
+
+    answer = generation_service.generate_answer(
+        question,
+        top_chunks
+    )
 
     return {
     "filename": file_path.name,
     "text_length": len(raw),
     "total_chunks": len(chunks),
     "embedding dimensions ":len(embedded_data[0]),
-    "similarity_scores": retreive_k_elements,
-    "preview": chunks[0][:500] if chunks else ""
+    "similarity_scores": top_k,
+    "answer": answer
 }
