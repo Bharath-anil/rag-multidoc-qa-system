@@ -1,4 +1,5 @@
-
-def clean_data(data):
-    cleaned = data.strip().replace("\n ", " ").replace("(cid:127)", "")
-    return cleaned
+import re
+def clean_data(data: str) -> str:
+    cleaned = re.sub(r"\(cid:\d+\)", "", data)
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    return cleaned.strip()
