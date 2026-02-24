@@ -1,4 +1,1 @@
-document_store = {
-    "chunks": [],
-    "embeddings": []
-}
+document_store = {}

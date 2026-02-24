@@ -4,6 +4,7 @@ from pydantic import BaseModel
 router =APIRouter()
 
 class QuestionRequest(BaseModel):
+    document_id:str
     question:str
 
 
@@ -19,5 +20,5 @@ def upload_doc(file: UploadFile):
 
 @router.post("/ask")
 def ask_about_doc(payload: QuestionRequest):
-    result_data = query_service.generate_ans(payload.question)
+    result_data = query_service.generate_ans(payload.question,payload.document_id)
     return result_data
