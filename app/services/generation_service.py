@@ -9,8 +9,9 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 def generate_answer(question, retrieved_chunks):
     context = "\n\n".join(retrieved_chunks)
 
-    prompt = f"""
-    Answer the question using only the context below.
+    prompt = f"""Use the most informative context.
+    If multiple contexts mention the term, prefer explanatory sections.
+    If the answer is not clearly defined, say "Not clearly defined in document."
 
     Context:
     {context}
@@ -20,7 +21,6 @@ def generate_answer(question, retrieved_chunks):
 
     Answer:
     """
-
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
     outputs = model.generate(
         **inputs,

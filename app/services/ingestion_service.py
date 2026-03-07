@@ -1,4 +1,4 @@
-from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_service
+from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_service,vector_store_service
 from .storage import document_store
 import uuid
 def process_file(file):
@@ -12,7 +12,7 @@ def process_file(file):
         "chunks": chunks,
         "embeddings": embedded_data
     }  
-
+    vector_store_service.build_index(embedded_data, chunks)
     return {
     "filename": file_path.name,
     "text_length": len(raw),
