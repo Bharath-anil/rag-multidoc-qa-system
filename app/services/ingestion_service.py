@@ -12,7 +12,7 @@ def process_file(file):
         "chunks": chunks,
         "embeddings": embedded_data
     }  
-    vector_store_service.build_index(embedded_data, chunks)
+    vector_store_service.build_index(embedded_data, chunks,document_id)
     return {
     "filename": file_path.name,
     "text_length": len(raw),

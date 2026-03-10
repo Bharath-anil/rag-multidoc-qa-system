@@ -1,22 +1,21 @@
 import re
 
-def chunk_data(text, max_size=800, overlap=1):
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+def chunk_data(text, max_size=800, overlap=100):
+
+    paragraphs = text.split("\n\n")
 
     chunks = []
-    current_chunk = []
+    current_chunk = ""
 
-    for sentence in sentences:
-        current_text = " ".join(current_chunk)
-
-        if len(current_text) + len(sentence) <= max_size:
-            current_chunk.append(sentence)
+    for p in paragraphs:
+        if len(current_chunk) + len(p) < max_size:
+            current_chunk += " " + p
         else:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = current_chunk[-overlap:]  # small sentence overlap
-            current_chunk.append(sentence)
+            chunks.append(current_chunk.strip())
+            current_chunk = p
 
     if current_chunk:
-        chunks.append(" ".join(current_chunk))
+        chunks.append(current_chunk.strip())
 
+    chunks = [c for c in chunks if len(c) > 150]
     return chunks
