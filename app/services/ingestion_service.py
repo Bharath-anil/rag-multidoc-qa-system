@@ -7,6 +7,8 @@ def process_file(file):
     raw = text_extractor.extract_text(file_path)
     cleaned = text_cleaner.clean_data(raw)
     chunks = chunk_service.chunk_data(cleaned)
+    chunks = [c for c in chunks if "Table of Contents" not in c]
+    chunks = [c for c in chunks if len(c) > 150]
     embedded_data = embedding_service.embed_chunks(chunks)
     document_store[document_id] = {
         "chunks": chunks,
