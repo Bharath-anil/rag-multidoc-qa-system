@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
 
-model_name = "google/flan-t5-small"
+model_name = "google/flan-t5-base"
 
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
@@ -11,14 +11,15 @@ def generate_answer(question, retrieved_chunks):
 
     prompt = f"""Use the context to answer the question.
 
-                If the question asks "what is X",
-                return the sentence that defines X.
     Context:
     {context}
 
     Question:
     {question}
 
+    Write a short definition in 1–2 sentences.
+    Do not  return single words.
+    Do not repeat document titles
     Answer:
     """
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True,max_length = 1024)
