@@ -19,7 +19,7 @@ def rerank(question,candidate_chunks,question_embedding,model,k=5):
         vector_score = vector_scores[i]
         keyword_score = keyword_scores[i]
 
-        score = 0.7 * vector_score + 0.3 * keyword_score
+        score = 0.8 * vector_score + 0.2 * keyword_score
 
         results.append({
             "score": float(score),
