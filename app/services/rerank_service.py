@@ -1,6 +1,15 @@
 from . import similarity_service,keyword_service
 
 def rerank(question,candidate_chunks,question_embedding,model,k=5):
+
+    filtered_chunks = []
+    for chunk in candidate_chunks:
+        if any(word in chunk.lower() for word in question.lower().split()):
+            filtered_chunks.append(chunk)
+
+    if len(filtered_chunks) > 0:
+        candidate_chunks = filtered_chunks
+
     chunk_embeddings = model.encode(candidate_chunks)
 
     vector_scores = similarity_service.compute_vector_scores(
@@ -14,12 +23,12 @@ def rerank(question,candidate_chunks,question_embedding,model,k=5):
     )
 
     results = []
-
+    
     for i, chunk in enumerate(candidate_chunks):
         vector_score = vector_scores[i]
         keyword_score = keyword_scores[i]
 
-        score = 0.8 * vector_score + 0.2 * keyword_score
+        score = 0.6 * vector_score + 0.4 * keyword_score
 
         results.append({
             "score": float(score),

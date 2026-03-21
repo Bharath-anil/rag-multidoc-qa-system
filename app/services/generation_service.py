@@ -9,7 +9,10 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 def generate_answer(question, retrieved_chunks):
     context = "\n\n".join(retrieved_chunks)
 
-    prompt = f"""Use the context to answer the question.
+    prompt = f"""
+    You are a QA system.
+
+    Use ONLY the context to answer the question.
 
     Context:
     {context}
@@ -17,10 +20,8 @@ def generate_answer(question, retrieved_chunks):
     Question:
     {question}
 
-    Write a short definition in 1–2 sentences.
-    Do not  return single words.
-    Do not repeat document titles
-    Answer:
+    Give a short definition in 1-2 sentences.
+    Return only the answer.
     """
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True,max_length = 1024)
     outputs = model.generate(
