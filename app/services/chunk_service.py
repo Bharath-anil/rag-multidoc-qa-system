@@ -16,10 +16,8 @@ def chunk_data(text, max_size=800, overlap=150):
             i += 1
 
         chunks.append(current.strip())
-
-        # move start forward with overlap
-        move = max(1, i - start)
-        start += max(1, move - int(overlap / 100))  # simple overlap control
+        overlap_sentences = 2
+        start = max(i - overlap_sentences, 0)
 
     chunks = [c for c in chunks if len(c) > 150]
     return chunks

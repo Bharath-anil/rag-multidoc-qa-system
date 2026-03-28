@@ -61,7 +61,11 @@ def search(question_embedding, k=40):
     distances, indices = index.search(query, k)
 
     results = []
-    for idx in indices[0]:
-        results.append(stored_chunks[idx])
-
+    for i, idx in enumerate(indices[0]):
+        results.append({
+            "text": stored_chunks[idx]["text"],
+            "document_id": stored_chunks[idx]["document_id"],
+            "embedding": index.reconstruct(int(idx)),
+            "score": float(distances[0][i])
+})
     return results
