@@ -4,8 +4,8 @@ from pydantic import BaseModel
 router =APIRouter()
 
 class QuestionRequest(BaseModel):
-    document_id:str
-    question:str
+    document_id:str|None =None
+    question:str 
 
 
 @router.get("/health")

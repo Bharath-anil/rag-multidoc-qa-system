@@ -40,7 +40,7 @@ def extract_top_sentences(question, chunks, top_n=3):
     return cleaned
 
 
-def generate_ans(question: str, document_id: str):
+def generate_ans(question: str, document_id: str =None):
 
     #Query Expansion
     expansion_queries = query_expansion_service.expand_query(question)
@@ -49,7 +49,7 @@ def generate_ans(question: str, document_id: str):
 
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
-        results = vector_store_service.search(emb, k=15)
+        results = vector_store_service.search(emb, k=8)
         all_candidates.extend(results)
 
     #Dedup + basic filtering
@@ -69,16 +69,7 @@ def generate_ans(question: str, document_id: str):
         if key not in unique_chunks:
             unique_chunks[key] = item
 
-    # Document-level filtering (AFTER dedup)
-    filtered_by_doc = [
-        v for v in unique_chunks.values()
-        if v["document_id"] == document_id
-    ]
-
-    if filtered_by_doc:
-        candidate_chunks = [v["text"] for v in filtered_by_doc]
-    else:
-        candidate_chunks = [v["text"] for v in unique_chunks.values()]
+    candidate_chunks = list(unique_chunks.values())
 
     #Safety check
     if not candidate_chunks:
@@ -86,6 +77,10 @@ def generate_ans(question: str, document_id: str):
             "chunks_used": [],
             "answer": "No relevant information found."
         }
+
+    # doc_score = {}
+    # for c in candidate_chunks:
+    #     doc_score[c["document_id"]] += 1
 
     #Rerank
     question_embedding = embedding_service.embed_query(question)

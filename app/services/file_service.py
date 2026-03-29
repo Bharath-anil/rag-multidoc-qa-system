@@ -5,10 +5,7 @@ from pathlib import Path
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-document_store ={
-    "chunks":[],
-    "embeddings":[]
-}
+document_store = {}
 
 def save_file(file):
     file_path = UPLOAD_DIR / file.filename
