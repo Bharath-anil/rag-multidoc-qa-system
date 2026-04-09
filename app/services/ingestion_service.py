@@ -9,6 +9,7 @@ def process_file(file):
     chunks = chunk_service.chunk_data(cleaned)
     chunks = [c for c in chunks if "Table of Contents" not in c]
     chunks = [c for c in chunks if len(c) > 150]
+    chunks = chunks[:10]
     embedded_data = embedding_service.embed_chunks(chunks) 
     vector_store_service.build_index(embedded_data, chunks,document_id)
     return {

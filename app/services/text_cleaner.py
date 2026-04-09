@@ -6,7 +6,7 @@ def clean_data(text):
     text = text.replace("\r\n", "\n")
     
     # collapse single newlines only
-    text = re.sub(r"\n", "\n\n", text)
+    text = re.sub(r"\n{2,}", "\n", text)
 
     text = re.sub(r'\(cid:\d+\)', ' ', text)
     text = re.sub(r'Page\s*[-–]?\s*\d+', ' ', text)
