@@ -13,12 +13,14 @@ CHUNK_FILE = "chunks.pkl"
 def build_index(embeddings, chunks,document_id):
     global index, stored_chunks
 
-    embeddings_np = np.array(embeddings).astype("float32")
     if index is None:
         dimension = len(embeddings[0])
         index = faiss.IndexFlatL2(dimension)
+        stored_chunks = []
 
+    embeddings_np = np.array(embeddings).astype("float32")
     index.add(embeddings_np)
+    
     new_chunks = [{"text": c, "document_id": document_id} for c in chunks]
     stored_chunks.extend(new_chunks)
     save_index()

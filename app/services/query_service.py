@@ -15,19 +15,32 @@ def extract_top_sentences(question, chunks, top_n=3):
         w for w in question.lower().split() if w not in stopwords
     )
 
+    definition_keywords = {"is", "means", "defined", "refers"}
+
     scored = []
 
     for chunk in chunks:
         sentences = re.split(r'(?<=[.!?])\s+', chunk)
 
         for sent in sentences:
-            if len(sent.strip()) < 20:
+            s = sent.strip()
+            if len(s) < 30:
                 continue
 
-            words = set(sent.lower().split())
+            words = set(s.lower().split())
+
+            # base score
             score = len(question_words & words)
 
-            scored.append((score, sent.strip()))
+            if any(word in words for word in definition_keywords):
+                score += 2
+
+            #penalize code-like sentences
+            if any(x in s for x in ["=", "for ", "while ", "def "]):
+                score -= 1
+
+            if score > 0:
+                scored.append((score, s))
 
     scored.sort(reverse=True, key=lambda x: x[0])
 
@@ -40,19 +53,23 @@ def extract_top_sentences(question, chunks, top_n=3):
     return cleaned
 
 
-def generate_ans(question: str, document_id: str =None):
+def build_definition_answer(question, chunk):
+    title = chunk.split("\n")[0]
+    return f"{title.strip()} is related to {question.lower()}."
 
-    #Query Expansion
+
+def generate_ans(question: str, document_id: str = None):
+
     expansion_queries = query_expansion_service.expand_query(question)
 
     all_candidates = []
 
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
-        results = vector_store_service.search(emb, k=8)
+        results = vector_store_service.search(emb, k=5)
         all_candidates.extend(results)
 
-    #Dedup + basic filtering
+    # Dedup + filtering
     unique_chunks = {}
 
     for item in all_candidates:
@@ -71,18 +88,30 @@ def generate_ans(question: str, document_id: str =None):
 
     candidate_chunks = list(unique_chunks.values())
 
-    #Safety check
     if not candidate_chunks:
         return {
             "chunks_used": [],
             "answer": "No relevant information found."
         }
 
-    # doc_score = {}
-    # for c in candidate_chunks:
-    #     doc_score[c["document_id"]] += 1
+    # remove code-heavy chunks
+    def is_code_heavy(text):
+        lines = text.split("\n")
+        code_lines = sum(1 for l in lines if any(x in l for x in ["=", "for", "while", "def"]))
+        return code_lines / max(len(lines), 1) > 0.6
 
-    #Rerank
+    candidate_chunks = [
+        c for c in candidate_chunks
+        if not is_code_heavy(c["text"])
+    ]
+
+    if not candidate_chunks:
+        return {
+            "chunks_used": [],
+            "answer": "Content is mostly code. No clear definition found."
+        }
+
+    # Rerank
     question_embedding = embedding_service.embed_query(question)
 
     reranked = rerank_service.rerank(
@@ -95,23 +124,25 @@ def generate_ans(question: str, document_id: str =None):
 
     top_chunks = [item["chunk"] for item in reranked[:5]]
 
-    #Sentence-level compression
+    # Sentence extraction
     filtered_chunks = extract_top_sentences(question, top_chunks)
 
     if not filtered_chunks:
-        filtered_chunks = top_chunks[:2]
+        return {
+        "chunks_used": top_chunks,
+        "answer": build_definition_answer(question, top_chunks[0])
+        }
 
-    filtered_chunks = filtered_chunks[:3]
+    filtered_chunks = filtered_chunks[:2]
 
-    #LLM generation
     answer = generation_service.generate_answer(
         question,
         filtered_chunks
     )
 
-    #Fallback
+    # final fallback cleanup
     if not answer or len(answer.split()) < 5:
-        answer = filtered_chunks[0]
+        answer = " ".join(filtered_chunks)
 
     return {
         "chunks_used": top_chunks,

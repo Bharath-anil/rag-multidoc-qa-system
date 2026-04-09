@@ -10,13 +10,13 @@ def process_file(file):
     chunks = [c for c in chunks if "Table of Contents" not in c]
     chunks = [c for c in chunks if len(c) > 150]
     chunks = chunks[:10]
-    embedded_data = embedding_service.embed_chunks(chunks) 
-    vector_store_service.build_index(embedded_data, chunks,document_id)
+    for embeddings, batch_chunks in embedding_service.embed_chunks(chunks):
+        vector_store_service.build_index(embeddings, batch_chunks, document_id)
+
     return {
     "filename": file_path.name,
     "text_length": len(raw),
     "total_chunks": len(chunks),
-    "embedding dimensions ":len(embedded_data[0]),
     "document_id": document_id,
     
 }

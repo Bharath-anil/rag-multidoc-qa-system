@@ -24,4 +24,4 @@ def chunk_data(text, max_size=800, overlap=150):
         start = next_start
 
     chunks = [c for c in chunks if len(c) > 150]
-    return chunks
+    return chunks[:10]
