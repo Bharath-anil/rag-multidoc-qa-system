@@ -35,9 +35,9 @@ def extract_top_sentences(question, chunks, top_n=3):
             if any(word in words for word in definition_keywords):
                 score += 2
 
-            #penalize code-like sentences
-            if any(x in s for x in ["=", "for ", "while ", "def "]):
-                score -= 1
+            # #penalize code-like sentences
+            # if any(x in s for x in ["=", "for ", "while ", "def "]):
+            #     score -= 1
 
             if score > 0:
                 scored.append((score, s))
@@ -57,6 +57,13 @@ def build_definition_answer(question, chunk):
     title = chunk.split("\n")[0]
     return f"{title.strip()} is related to {question.lower()}."
 
+
+def is_code_heavy(text):
+    # Only flag actual code patterns
+    code_patterns = re.compile(r'(def\s+\w+\s*\(|for\s+\w+\s+in\s+|while\s+\w+\s*[=:<]|import\s+\w+|==|!=|>=|<=)')
+    lines = text.split("\n")
+    code_lines = sum(1 for l in lines if code_patterns.search(l))
+    return code_lines / max(len(lines), 1) > 0.5
 
 def generate_ans(question: str, document_id: str = None):
 
@@ -94,22 +101,11 @@ def generate_ans(question: str, document_id: str = None):
             "answer": "No relevant information found."
         }
 
-    # remove code-heavy chunks
-    def is_code_heavy(text):
-        lines = text.split("\n")
-        code_lines = sum(1 for l in lines if any(x in l for x in ["=", "for", "while", "def"]))
-        return code_lines / max(len(lines), 1) > 0.6
+    candidate_chunks = [c for c in candidate_chunks if not is_code_heavy(c["text"])]
 
-    candidate_chunks = [
-        c for c in candidate_chunks
-        if not is_code_heavy(c["text"])
-    ]
 
     if not candidate_chunks:
-        return {
-            "chunks_used": [],
-            "answer": "Content is mostly code. No clear definition found."
-        }
+        return {"chunks_used": [], "answer": "No relevant text found."}
 
     # Rerank
     question_embedding = embedding_service.embed_query(question)
@@ -125,24 +121,24 @@ def generate_ans(question: str, document_id: str = None):
     top_chunks = [item["chunk"] for item in reranked[:5]]
 
     # Sentence extraction
-    filtered_chunks = extract_top_sentences(question, top_chunks)
+    # filtered_chunks = extract_top_sentences(question, top_chunks)
 
-    if not filtered_chunks:
-        return {
-        "chunks_used": top_chunks,
-        "answer": build_definition_answer(question, top_chunks[0])
-        }
+    # if not filtered_chunks:
+    #     return {
+    #     "chunks_used": top_chunks,
+    #     "answer": build_definition_answer(question, top_chunks[0])
+    #     }
 
-    filtered_chunks = filtered_chunks[:2]
-
+    # filtered_chunks = filtered_chunks[:2]
+    context_chunks = top_chunks[:2] 
     answer = generation_service.generate_answer(
         question,
-        filtered_chunks
+        context_chunks
     )
 
     # final fallback cleanup
     if not answer or len(answer.split()) < 5:
-        answer = " ".join(filtered_chunks)
+        answer = " ".join(context_chunks)
 
     return {
         "chunks_used": top_chunks,

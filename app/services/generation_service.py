@@ -1,51 +1,76 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import torch
+import requests
+import os
+from dotenv import load_dotenv
+import json
+load_dotenv()
 
-tokenizer = None
-model = None
-
-tokenizer = None
-model = None
-
-def get_model():
-    global tokenizer, model
-
-    if model is None or tokenizer is None:
-        from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-
-        model_name = "google/flan-t5-small"
-
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-
-    return tokenizer, model
+API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 
 def generate_answer(question, retrieved_chunks):
     if not retrieved_chunks:
         return "No answer found."
 
-    tokenizer, model = get_model()
-
-    context = "\n\n".join(retrieved_chunks)
+    context = retrieved_chunks[0]
 
     prompt = f"""
-    Answer the question using the context.
+        Answer the question in ONE short sentence.
 
-    Context:
-    {context}
+        Only return the final answer.
+        Do NOT include explanations.
+        Do NOT repeat context.
 
-    Question:
-    {question}
+        Context:
+        {context}
 
-    Answer in 1-2 sentences.
-    """
+        Question:
+        {question}
 
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
+        Answer:
+        """
 
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=100
-    )
+    try:
+        response = requests.post(
+        url="https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+        },
+        data=json.dumps({
+            "model": "google/gemma-4-26b-a4b-it:free",
+            "messages": [
+                {
+                "role": "user",
+                "content": prompt
+                }
+            ],
+            "reasoning": {"enabled": True},
+            "max_tokens": 60,
+            "temperature": 0.1,
+        })
+        )
 
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        result = response.json()
+
+        choices = result.get("choices")
+
+        if not choices:
+            return f"API Error: {result}"
+
+        message = choices[0].get("message", {})
+        content = message.get("content")
+
+        if not content:
+            return f"Empty response: {result}"
+
+        answer = content.strip()
+
+        # keep only first sentence
+        if "." in answer:
+            answer = answer.split(".")[0] + "."
+
+        return answer
+
+    except Exception as e:
+        return f"Error generating answer: {str(e)}"

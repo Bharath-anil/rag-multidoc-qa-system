@@ -1,27 +1,78 @@
 import re
-
-def chunk_data(text, max_size=800, overlap=150):
-
-    sentences = re.split(r'(?<=[.!?])\s+', text)
-
+from collections import Counter
+ 
+# Generic section types to skip — these exist in almost every textbook/doc
+SKIP_SECTIONS = re.compile(
+    r"^\s*(objectives|terminal exercise|intext questions|what you have learnt|"
+    r"answers to intext|fill in the blank|state whether|choose the correct|"
+    r"summary|review questions|exercises|activities)\s*$",
+    re.IGNORECASE
+)
+ 
+# Generic structural noise — pattern based, NOT content based
+NOISE_LINE = re.compile(
+    r"^\s*("
+    r"fig(ure)?\.?\s*\d+[\.\d]*.*|"      # Fig. 1.2: Something
+    r"module\s*[-–]\s*\d+|"              # MODULE – 1
+    r"\d+\s*$|"                           # lone page number
+    r"[a-z ]+\s+\d+\s*$|"               # "Computer Science 3"
+    r"\d+\s+[a-z ]+\s*$"                # "3 Computer Science"
+    r")\s*$",
+    re.IGNORECASE
+)
+ 
+def find_repeated_lines(lines, threshold=3):
+    """Lines appearing 3+ times are headers/footers — drop them."""
+    counts = Counter(l.strip() for l in lines if len(l.strip()) > 2)
+    return {line for line, count in counts.items() if count >= threshold}
+ 
+def chunk_data(text, max_size=800, min_size=150):
+    lines = text.splitlines()
+ 
+    # Find repeated header/footer lines generically
+    repeated = find_repeated_lines(lines)
+ 
+    cleaned = []
+    skip_mode = False
+ 
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+ 
+        # Skip repeated headers/footers (page headers, footers)
+        if stripped in repeated:
+            continue
+ 
+        # Enter skip mode on known boilerplate section headers
+        if SKIP_SECTIONS.match(stripped):
+            skip_mode = True
+            continue
+ 
+        if re.match(r'^\d+[\.\d]*\s+\S', stripped):
+            skip_mode = False
+ 
+        if skip_mode:
+            continue
+ 
+        if NOISE_LINE.match(stripped):
+            continue
+ 
+        cleaned.append(stripped)
+ 
+    # Merge into chunks
     chunks = []
-    start = 0
-
-    while start < len(sentences):
-        current = ""
-        i = start
-
-        while i < len(sentences) and len(current) + len(sentences[i]) < max_size:
-            current += " " + sentences[i]
-            i += 1
-        
-        if i == start:  
-            break
-
-        chunks.append(current.strip())
-        overlap_sentences = 2
-        next_start = max(i - overlap_sentences, start + 1)  # +1 guarantees forward progress
-        start = next_start
-
-    chunks = [c for c in chunks if len(c) > 150]
+    buffer = ""
+ 
+    for line in cleaned:
+        if len(buffer) + len(line) + 1 < max_size:
+            buffer = (buffer + " " + line).strip()
+        else:
+            if len(buffer) >= min_size:
+                chunks.append(buffer)
+            buffer = line
+ 
+    if len(buffer) >= min_size:
+        chunks.append(buffer)
+ 
     return chunks[:10]
