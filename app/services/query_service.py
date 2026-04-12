@@ -16,7 +16,6 @@ def extract_top_sentences(question, chunks, top_n=3):
     )
 
     definition_keywords = {"is", "means", "defined", "refers"}
-
     scored = []
 
     for chunk in chunks:
@@ -28,7 +27,6 @@ def extract_top_sentences(question, chunks, top_n=3):
                 continue
 
             words = set(s.lower().split())
-
             # base score
             score = len(question_words & words)
 
@@ -39,7 +37,6 @@ def extract_top_sentences(question, chunks, top_n=3):
                 scored.append((score, s))
 
     scored.sort(reverse=True, key=lambda x: x[0])
-
     cleaned = []
     for _, s in scored[:top_n]:
         if not s.endswith('.'):
@@ -53,7 +50,7 @@ def build_definition_answer(question, chunk):
     title = chunk.split("\n")[0]
     return f"{title.strip()} is related to {question.lower()}."
 
-
+# filtering coding content 
 def is_code_heavy(text):
     # Only flag actual code patterns
     code_patterns = re.compile(r'(def\s+\w+\s*\(|for\s+\w+\s+in\s+|while\s+\w+\s*[=:<]|import\s+\w+|==|!=|>=|<=)')
@@ -61,8 +58,9 @@ def is_code_heavy(text):
     code_lines = sum(1 for l in lines if code_patterns.search(l))
     return code_lines / max(len(lines), 1) > 0.5
 
-def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = None):
 
+def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = None):
+    # user based filtering 
     user = get_user(username)
     if not user:
         return {"answer": "User not found", "chunks_used": []}
@@ -128,26 +126,12 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
     # Rerank
     question_embedding = embedding_service.embed_query(question)
 
-    reranked = rerank_service.rerank(
-        question,
-        candidate_chunks,
-        question_embedding,
-        embedding_service.get_model(),
-        k=5
-    )
+    selected =rerank_service.mmr_select(candidate_chunks,
+                                        question_embedding,
+                                        top_k=5)
 
-    top_chunks = [item["chunk"] for item in reranked[:5]]
+    top_chunks = [item["text"] for item in selected]
 
-    # Sentence extraction
-    # filtered_chunks = extract_top_sentences(question, top_chunks)
-
-    # if not filtered_chunks:
-    #     return {
-    #     "chunks_used": top_chunks,
-    #     "answer": build_definition_answer(question, top_chunks[0])
-    #     }
-
-    # filtered_chunks = filtered_chunks[:2]
     context_chunks = top_chunks[:2] 
     answer = generation_service.generate_answer(
         question,

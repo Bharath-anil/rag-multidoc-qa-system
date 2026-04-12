@@ -1,20 +1,9 @@
 from . import similarity_service,keyword_service
 
 def rerank(question,candidate_chunks,question_embedding,model,k=5):
-
-    filtered_chunks = []
+    
     texts = [c["text"] for c in candidate_chunks]
     embeddings = [c["embedding"] for c in candidate_chunks]
-
-    filtered = []
-
-    for i, text in enumerate(texts):
-        if any(word in text.lower() for word in question.lower().split()):
-            filtered.append((text, embeddings[i]))
-
-    if filtered:
-        texts = [f[0] for f in filtered]
-        embeddings = [f[1] for f in filtered]
 
     vector_scores = similarity_service.compute_vector_scores(
     question_embedding,
@@ -33,8 +22,46 @@ def rerank(question,candidate_chunks,question_embedding,model,k=5):
 
         results.append({
             "score": float(score),
-            "chunk": texts[i]
+            "text": texts[i],
+            "embedding": embeddings[i]
         })
 
     results.sort(reverse =True,key=lambda x:x["score"])
     return results[:k]
+
+
+# for picking  best chunk 
+def mmr_select(chunks, query_embedding, lambda_param=0.7, top_k=5):
+    selected = []
+    candidates = chunks.copy()
+
+    while candidates and len(selected) < top_k:
+        best = None
+        best_score = -1
+
+        for c in candidates:
+            relevance = similarity_service.cosine_similarity(
+                query_embedding,
+                c["embedding"]
+            )
+
+            diversity = 0
+            if selected:
+                diversity = max(
+                    similarity_service.cosine_similarity(
+                        c["embedding"],
+                        s["embedding"]
+                    )
+                    for s in selected
+                )
+
+            score = lambda_param * relevance - (1 - lambda_param) * diversity
+
+            if score > best_score:
+                best_score = score
+                best = c
+
+        selected.append(best)
+        candidates.remove(best)
+
+    return selected
