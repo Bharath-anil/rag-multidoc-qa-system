@@ -8,5 +8,7 @@ router = APIRouter()
 async def ask_about_doc(payload: QuestionRequest):
     return query_service.generate_ans(
         payload.question,
-        payload.document_id
+        payload.username,
+        payload.document_ids
+        
     )

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
 
 class QuestionRequest(BaseModel):
-    document_id: Optional[str] = None
+    document_ids: Optional[List[str]] = None
     question: str
+    username: str

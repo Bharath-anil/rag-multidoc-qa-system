@@ -1,4 +1,3 @@
-from .storage import document_store
 from . import (
     generation_service,
     rerank_service,
@@ -7,6 +6,7 @@ from . import (
 from app.core.dependencies import embedding_service, vector_store
 import re
 from typing import Optional
+from app.storage.user_store import get_user
 
 
 def extract_top_sentences(question, chunks, top_n=3):
@@ -61,7 +61,22 @@ def is_code_heavy(text):
     code_lines = sum(1 for l in lines if code_patterns.search(l))
     return code_lines / max(len(lines), 1) > 0.5
 
-def generate_ans(question: str,document_id: Optional[str] = None):
+def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = None):
+
+    user = get_user(username)
+    if not user:
+        return {"answer": "User not found", "chunks_used": []}
+    allowed_docs = set(user["documents"])
+
+    if document_ids:
+        requested = set(document_ids)
+
+        # access control
+        if not requested.issubset(allowed_docs):
+            return {"answer": "Access denied", "chunks_used": []}
+
+        allowed_docs = requested
+
 
     expansion_queries = query_expansion_service.expand_query(question)
 
@@ -70,7 +85,14 @@ def generate_ans(question: str,document_id: Optional[str] = None):
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
         results = vector_store.search(emb, k=5)
-        all_candidates.extend(results)
+        filtered_results = [
+            r for r in results
+            if r["document_id"] in allowed_docs
+        ]
+
+        if document_ids and not filtered_results:
+            filtered_results = results
+        all_candidates.extend(filtered_results)
 
     # Dedup + filtering
     unique_chunks = {}
@@ -110,7 +132,7 @@ def generate_ans(question: str,document_id: Optional[str] = None):
         question,
         candidate_chunks,
         question_embedding,
-        embedding_service.model,
+        embedding_service.get_model(),
         k=5
     )
 
