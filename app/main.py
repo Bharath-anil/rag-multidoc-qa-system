@@ -1,10 +1,15 @@
 from fastapi import FastAPI
-from .routers import upload
-from dotenv import load_dotenv
-import os
-from .services.vector_store_service import load_index
+from contextlib import asynccontextmanager
 
-app = FastAPI()
-load_dotenv()
-load_index()
+from app.routers import upload, query
+from app.core.dependencies import vector_store
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    vector_store.load_index()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 app.include_router(upload.router)
+app.include_router(query.router)

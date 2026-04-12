@@ -1,5 +1,5 @@
 from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_service,vector_store_service
-from .storage import document_store
+from app.core.dependencies import embedding_service, vector_store
 import uuid
 def process_file(file):
     document_id = str(uuid.uuid4())
@@ -11,7 +11,7 @@ def process_file(file):
     chunks = [c for c in chunks if len(c) > 150]
     chunks = chunks[:10]
     for embeddings, batch_chunks in embedding_service.embed_chunks(chunks):
-        vector_store_service.build_index(embeddings, batch_chunks, document_id)
+        vector_store.build_index(embeddings, batch_chunks, document_id)
 
     return {
     "filename": file_path.name,

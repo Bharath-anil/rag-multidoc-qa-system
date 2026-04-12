@@ -1,12 +1,12 @@
 from .storage import document_store
 from . import (
-    embedding_service,
     generation_service,
-    vector_store_service,
     rerank_service,
     query_expansion_service
 )
+from app.core.dependencies import embedding_service, vector_store
 import re
+from typing import Optional
 
 
 def extract_top_sentences(question, chunks, top_n=3):
@@ -35,10 +35,6 @@ def extract_top_sentences(question, chunks, top_n=3):
             if any(word in words for word in definition_keywords):
                 score += 2
 
-            # #penalize code-like sentences
-            # if any(x in s for x in ["=", "for ", "while ", "def "]):
-            #     score -= 1
-
             if score > 0:
                 scored.append((score, s))
 
@@ -65,7 +61,7 @@ def is_code_heavy(text):
     code_lines = sum(1 for l in lines if code_patterns.search(l))
     return code_lines / max(len(lines), 1) > 0.5
 
-def generate_ans(question: str, document_id: str = None):
+def generate_ans(question: str,document_id: Optional[str] = None):
 
     expansion_queries = query_expansion_service.expand_query(question)
 
@@ -73,7 +69,7 @@ def generate_ans(question: str, document_id: str = None):
 
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
-        results = vector_store_service.search(emb, k=5)
+        results = vector_store.search(emb, k=5)
         all_candidates.extend(results)
 
     # Dedup + filtering

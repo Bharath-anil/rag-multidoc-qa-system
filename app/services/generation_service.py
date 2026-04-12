@@ -1,11 +1,8 @@
 import requests
-import os
-from dotenv import load_dotenv
 import json
-load_dotenv()
+from app.core.config import settings
 
-API_KEY = os.getenv("OPENROUTER_API_KEY")
-
+API_KEY = settings.OPENROUTER_API_KEY
 
 def generate_answer(question, retrieved_chunks):
     if not retrieved_chunks:
@@ -37,7 +34,7 @@ def generate_answer(question, retrieved_chunks):
             "Content-Type": "application/json",
         },
         data=json.dumps({
-            "model": "google/gemma-4-26b-a4b-it:free",
+            "model":"openai/gpt-oss-120b:free",# "google/gemma-4-26b-a4b-it:free",
             "messages": [
                 {
                 "role": "user",

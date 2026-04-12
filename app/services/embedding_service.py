@@ -1,24 +1,24 @@
 from  sentence_transformers import SentenceTransformer
+from app.core.config import settings
+class EmbeddingService:
+    def __init__(self):
+        self.model = None
 
-model = None
+    def get_model(self):
+        if self.model is None:
+            print("Loading embedding model...")
+        self.model = SentenceTransformer(settings.MODEL_NAME)
+        return self.model
 
-def get_model():
-    global model
-    if model is None:
-        print("Loading embedding model...")
-        from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer("all-MiniLM-L6-v2")  # lighter
-    return model
+    def embed_chunks(self,chunks, batch_size=4):
+        model = self.get_model()
 
-def embed_chunks(chunks, batch_size=4):
-    model = get_model()
+        for i in range(0, len(chunks), batch_size):
+            batch = chunks[i:i + batch_size]
+            embeddings = model.encode(batch)
 
-    for i in range(0, len(chunks), batch_size):
-        batch = chunks[i:i + batch_size]
-        embeddings = model.encode(batch)
+            yield embeddings, batch
 
-        yield embeddings, batch
-
-def embed_query(question):
-    model = get_model()
-    return model.encode([question])[0]
+    def embed_query(self,question):
+        model = self.get_model()
+        return model.encode([question])[0]
