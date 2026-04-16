@@ -18,7 +18,13 @@ def rerank(question,candidate_chunks,question_embedding,model,k=5):
     results = []
     
     for i in range(len(texts)):
-        score = 0.6 * vector_scores[i] + 0.4 * keyword_scores[i]
+        base_score = candidate_chunks[i].get("score", 0)
+        score = (0.8 * vector_scores[i] + 0.2 * keyword_scores[i]) + base_score
+
+        text = texts[i].lower()
+
+        if any(word in text for word in ["click", "install", "press"]):
+            score -= 0.2
 
         results.append({
             "score": float(score),

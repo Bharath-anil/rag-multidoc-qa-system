@@ -10,13 +10,17 @@ def process_file(file,username: str):
     cleaned = text_cleaner.clean_data(raw)
     chunks = chunk_service.chunk_data(cleaned)
     chunks = [c for c in chunks if "Table of Contents" not in c]
-    chunks = [c for c in chunks if len(c) > 150]
-    chunks = chunks[:10]
+    chunks = [c for c in chunks if len(c) > 40]
+    # chunks = chunks[:10]
     for embeddings, batch_chunks in embedding_service.embed_chunks(chunks):
         vector_store.build_index(embeddings, batch_chunks, document_id)
 
     user = get_user(username) or create_user(username)
     user["documents"].append(document_id)
+
+    print("\nSAMPLE CHUNKS:")
+    for c in chunks[:10]:
+        print(c[:120])
 
     return {
     "filename": file_path.name,

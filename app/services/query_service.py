@@ -82,24 +82,26 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
 
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
-        results = vector_store.search(emb, k=5)
+        results = vector_store.search(emb, k=60)
         filtered_results = [
             r for r in results
             if r["document_id"] in allowed_docs
         ]
 
-        if document_ids and not filtered_results:
-            filtered_results = results
+        print("Filtered results:", len(filtered_results))
+
+        print("Allowed docs:", allowed_docs)
+        print("Sample result doc ids:", [r["document_id"] for r in results[:5]])
         all_candidates.extend(filtered_results)
+
+    if not all_candidates:
+        return {"answer": "No access or no data", "chunks_used": []}
 
     # Dedup + filtering
     unique_chunks = {}
 
     for item in all_candidates:
         text = item["text"]
-
-        if len(text) < 80:
-            continue
 
         if "table of contents" in text.lower():
             continue
@@ -123,12 +125,39 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
     if not candidate_chunks:
         return {"chunks_used": [], "answer": "No relevant text found."}
 
+    is_definition = question.lower().startswith(("what is", "define", "what are"))
+    boosted_chunks = []
+
+    for c in candidate_chunks:
+        text = c["text"].lower()
+
+        if is_definition:
+            if " is " in text or " refers to " in text:
+                c["score"] = c.get("score", 0) + 1.2
+
+        boosted_chunks.append(c)
+
+    candidate_chunks = boosted_chunks
     # Rerank
     question_embedding = embedding_service.embed_query(question)
 
-    selected =rerank_service.mmr_select(candidate_chunks,
-                                        question_embedding,
-                                        top_k=5)
+    reranked = rerank_service.rerank(
+        question,
+        candidate_chunks,
+        question_embedding,
+        embedding_service.get_model(),
+        k=10
+    )
+
+    print("\nTOP RERANKED:")
+    for r in reranked[:5]:
+        print(r["text"][:120])
+
+    selected = rerank_service.mmr_select(
+        reranked,
+        question_embedding,
+        top_k=5
+    )
 
     top_chunks = [item["text"] for item in selected]
 
@@ -141,6 +170,8 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
     # final fallback cleanup
     if not answer or len(answer.split()) < 5:
         answer = " ".join(context_chunks)
+
+
 
     return {
         "chunks_used": top_chunks,

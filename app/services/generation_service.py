@@ -8,7 +8,7 @@ def generate_answer(question, retrieved_chunks):
     if not retrieved_chunks:
         return "No answer found."
 
-    context = retrieved_chunks[0]
+    context = "\n".join(retrieved_chunks[:2])
 
     prompt = f"""
         Answer the question in ONE short sentence.

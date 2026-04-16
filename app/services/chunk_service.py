@@ -26,7 +26,7 @@ def find_repeated_lines(lines, threshold=3):
     counts = Counter(l.strip() for l in lines if len(l.strip()) > 2)
     return {line for line, count in counts.items() if count >= threshold}
  
-def chunk_data(text, max_size=800, min_size=150):
+def chunk_data(text, max_size=300, min_size=50):
     lines = text.splitlines()
  
     # Find repeated header/footer lines generically
@@ -74,5 +74,14 @@ def chunk_data(text, max_size=800, min_size=150):
  
     if len(buffer) >= min_size:
         chunks.append(buffer)
- 
-    return chunks[:10]
+    
+    def extract_definition_sentences(text):
+        sentences = re.split(r'(?<=[.!?])\s+', text)
+        return [
+            s.strip()
+            for s in sentences
+            if " is " in s.lower() and 20 < len(s) < 200
+        ]
+
+
+    return chunks + extract_definition_sentences(text)
