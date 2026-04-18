@@ -6,7 +6,8 @@ from . import (
 from app.core.dependencies import embedding_service, vector_store
 import re
 from typing import Optional
-from app.storage.user_store import get_user
+from sqlalchemy.orm import Session
+from app.models.document import Document
 
 
 def extract_top_sentences(question, chunks, top_n=3):
@@ -59,44 +60,32 @@ def is_code_heavy(text):
     return code_lines / max(len(lines), 1) > 0.5
 
 
-def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = None):
-    # user based filtering 
-    user = get_user(username)
-    if not user:
-        return {"answer": "User not found", "chunks_used": []}
-    allowed_docs = set(user["documents"])
+def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
 
-    if document_ids:
-        requested = set(document_ids)
+    docs = db.query(Document).filter(Document.user_id == user_id).all()
+    allowed_docs = {str(d.id).strip().lower() for d in docs}
 
-        # access control
-        if not requested.issubset(allowed_docs):
-            return {"answer": "Access denied", "chunks_used": []}
-
-        allowed_docs = requested
-
+    # if document_ids:
+    #     requested = set(document_ids)
+    #     allowed_docs = allowed_docs.intersection(requested)
 
     expansion_queries = query_expansion_service.expand_query(question)
-
     all_candidates = []
 
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
         results = vector_store.search(emb, k=60)
-        filtered_results = [
-            r for r in results
-            if r["document_id"] in allowed_docs
-        ]
 
-        print("Filtered results:", len(filtered_results))
+        for r in results:
+            faiss_id = str(r["document_id"]).strip().lower()
+            if faiss_id in allowed_docs:
+                all_candidates.append(r)
 
-        print("Allowed docs:", allowed_docs)
-        print("Sample result doc ids:", [r["document_id"] for r in results[:5]])
-        all_candidates.extend(filtered_results)
-
+        
     if not all_candidates:
-        return {"answer": "No access or no data", "chunks_used": []}
-
+        print("No candidates after filter. Allowed:", allowed_docs)
+        return {"answer": "No relevant information found.", "chunks_used": []}
+ 
     # Dedup + filtering
     unique_chunks = {}
 
@@ -105,11 +94,11 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
 
         if "table of contents" in text.lower():
             continue
-
         key = text[:200]
 
         if key not in unique_chunks:
             unique_chunks[key] = item
+
 
     candidate_chunks = list(unique_chunks.values())
 
@@ -120,7 +109,6 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
         }
 
     candidate_chunks = [c for c in candidate_chunks if not is_code_heavy(c["text"])]
-
 
     if not candidate_chunks:
         return {"chunks_used": [], "answer": "No relevant text found."}
@@ -142,16 +130,12 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
     question_embedding = embedding_service.embed_query(question)
 
     reranked = rerank_service.rerank(
-        question,
-        candidate_chunks,
-        question_embedding,
-        embedding_service.get_model(),
-        k=10
+    question,
+    candidate_chunks,
+    question_embedding,
+    embedding_service.get_model(),
+    k=20
     )
-
-    print("\nTOP RERANKED:")
-    for r in reranked[:5]:
-        print(r["text"][:120])
 
     selected = rerank_service.mmr_select(
         reranked,
@@ -171,9 +155,8 @@ def generate_ans(question: str,username:str,document_ids: Optional[list[str]] = 
     if not answer or len(answer.split()) < 5:
         answer = " ".join(context_chunks)
 
-
-
     return {
         "chunks_used": top_chunks,
         "answer": answer
     }
+

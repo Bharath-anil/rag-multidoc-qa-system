@@ -21,7 +21,13 @@ class VectorStore:
         embeddings_np = np.array(embeddings).astype("float32")
         self.index.add(embeddings_np)
 
-        new_chunks = [{"text": c, "document_id": document_id} for c in chunks]
+        new_chunks = [
+                {
+                    "text": c,
+                    "document_id": str(document_id)  # ✅ EDGE CASE 3: type consistency
+                }
+                for c in chunks
+            ]
         self.stored_chunks.extend(new_chunks)
 
         self.save_index()
@@ -36,7 +42,6 @@ class VectorStore:
 
 
     def load_index(self):
-        global index, stored_chunks
 
         if os.path.exists(self.INDEX_FILE):
             self.index = faiss.read_index(self.INDEX_FILE)
@@ -49,9 +54,8 @@ class VectorStore:
         else:
             print("No existing index found")
 
-
     def search(self,question_embedding, k=40):
-        if self.index is None:
+        if self.index is None or self.index.ntotal == 0:
             return []
 
         query = np.array([question_embedding]).astype("float32")
@@ -60,6 +64,9 @@ class VectorStore:
 
         results = []
         for i, idx in enumerate(indices[0]):
+            if idx == -1:
+                continue
+
             results.append({
                 "text": self.stored_chunks[idx]["text"],
                 "document_id": self.stored_chunks[idx]["document_id"],
