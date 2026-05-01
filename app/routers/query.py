@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 from app.services import query_service
 from app.schemas.request import QuestionRequest
-from app.core.dependencies import get_db,get_current_user
+from app.core.dependencies import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
+from app.core.auth import get_current_user
 
 router = APIRouter()
 from app.core.config import settings

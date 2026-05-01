@@ -27,9 +27,10 @@ def rerank(question,candidate_chunks,question_embedding,model,k=5):
             score -= 0.2
 
         results.append({
-            "score": float(score),
+
             "text": texts[i],
-            "embedding": embeddings[i]
+            "embedding": embeddings[i],
+            "score": float(score)
         })
 
     results.sort(reverse =True,key=lambda x:x["score"])

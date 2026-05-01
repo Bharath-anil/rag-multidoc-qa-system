@@ -84,4 +84,4 @@ def chunk_data(text, max_size=300, min_size=50):
         ]
 
 
-    return chunks + extract_definition_sentences(text)
+    return chunks + extract_definition_sentences(" ".join(chunks))

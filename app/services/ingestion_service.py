@@ -1,4 +1,4 @@
-from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_service,vector_store_service
+from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_service
 from app.core.dependencies import embedding_service, vector_store
 
 def process_file(file,document_id):

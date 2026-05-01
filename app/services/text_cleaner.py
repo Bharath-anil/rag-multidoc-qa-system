@@ -15,5 +15,4 @@ def clean_data(text):
     text = re.sub(r'[ \t]+', ' ', text)
     text = re.sub(r'www\.\S+', ' ', text)
     text = re.sub(r'\(\d{3}\)\s*\d{3}-\d{4}', ' ', text)
-    text = re.sub(r'Clear-Cut Computing.*', ' ', text)
     return text.strip()

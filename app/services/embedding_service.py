@@ -7,7 +7,7 @@ class EmbeddingService:
     def get_model(self):
         if self.model is None:
             print("Loading embedding model...")
-        self.model = SentenceTransformer(settings.MODEL_NAME)
+            self.model = SentenceTransformer(settings.MODEL_NAME)
         return self.model
 
     def embed_chunks(self,chunks, batch_size=4):
