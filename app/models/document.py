@@ -27,3 +27,6 @@ class Document(Base):
         default=func.now(),
         onupdate=func.now()
     )
+    is_active: Mapped[bool] = mapped_column(
+    default=True
+    )

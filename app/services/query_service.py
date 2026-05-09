@@ -5,7 +5,6 @@ from . import (
 )
 from app.core.dependencies import embedding_service, vector_store
 import re
-from typing import Optional
 from sqlalchemy.orm import Session
 from app.models.document import Document
 
@@ -62,12 +61,16 @@ def is_code_heavy(text):
 
 def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
 
-    docs = db.query(Document).filter(Document.user_id == user_id).all()
+    docs = db.query(Document).filter(Document.user_id == user_id,Document.is_active == True).all()
     allowed_docs = {str(d.id).strip().lower() for d in docs}
 
-    # if document_ids:
-    #     requested = set(document_ids)
-    #     allowed_docs = allowed_docs.intersection(requested)
+    if document_ids:
+        requested = {
+            str(doc_id).strip().lower()
+            for doc_id in document_ids
+        }
+
+        allowed_docs = allowed_docs.intersection(requested)
 
     expansion_queries = query_expansion_service.expand_query(question)
     all_candidates = []
