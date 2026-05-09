@@ -13,13 +13,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-
-api_key_header = APIKeyHeader(name="X-User-Id")
-
-def get_current_user(x_user_id: str = Depends(api_key_header)):
-    if not x_user_id:
-        raise HTTPException(status_code=401, detail="Missing user")
-
-    return x_user_id

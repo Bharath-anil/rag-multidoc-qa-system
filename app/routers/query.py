@@ -8,7 +8,6 @@ from app.core.auth import get_current_user
 
 router = APIRouter()
 from app.core.config import settings
-print("DB URL:", settings.DATABASE_URL)
 @router.post("/ask")
 async def ask_about_doc(
     payload: QuestionRequest,

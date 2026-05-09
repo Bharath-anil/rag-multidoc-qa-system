@@ -13,10 +13,6 @@ def process_file(file,document_id):
     for embeddings, batch_chunks in embedding_service.embed_chunks(chunks):
         vector_store.build_index(embeddings, batch_chunks, document_id)
 
-    print("\nSAMPLE CHUNKS:")
-    for c in chunks[:10]:
-        print(c[:120])
-
     return {
     "filename": file_path.name,
     "text_length": len(raw),

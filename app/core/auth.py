@@ -7,8 +7,10 @@ from passlib.context import CryptContext
 import hashlib
 from app.core.dependencies import get_db
 from app.models.user import User
+from app.core.config import settings
 
-SECRET_KEY = "super-secret-key"
+
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

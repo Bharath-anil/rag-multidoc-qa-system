@@ -48,9 +48,6 @@ class VectorStore:
 
             with open(self.CHUNK_FILE, "rb") as f:
                 self.stored_chunks = pickle.load(f)
-
-            print("Vector store loaded")
-            print("Total vectors:", self.index.ntotal)
         else:
             print("No existing index found")
 
