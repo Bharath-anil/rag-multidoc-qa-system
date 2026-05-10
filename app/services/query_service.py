@@ -1,13 +1,9 @@
-from . import (
-    generation_service,
-    rerank_service,
-    query_expansion_service
-)
-from app.core.dependencies import embedding_service, vector_store
+from . import (  generation_service, rerank_service, query_expansion_service)
+from app.core.dependencies import embedding_service
 import re
 from sqlalchemy.orm import Session
 from app.models.document import Document
-
+from app.services.qdrant_vector_store import qdrant_store
 
 def extract_top_sentences(question, chunks, top_n=3):
     stopwords = {"what", "is", "the", "a", "an", "of"}
@@ -62,31 +58,41 @@ def is_code_heavy(text):
 def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
 
     docs = db.query(Document).filter(Document.user_id == user_id,Document.is_active == True).all()
-    allowed_docs = {str(d.id).strip().lower() for d in docs}
+    allowed_docs = {str(d.id).strip() for d in docs}
 
     if document_ids:
-        requested = {
-            str(doc_id).strip().lower()
-            for doc_id in document_ids
-        }
 
-        allowed_docs = allowed_docs.intersection(requested)
+            requested = {
+                str(doc_id).strip()
+                for doc_id in document_ids
+                if (
+                    str(doc_id).strip()
+                    and str(doc_id).strip() != "string"
+                )
+            }
+
+            if requested:
+                allowed_docs = allowed_docs.intersection(requested)
 
     expansion_queries = query_expansion_service.expand_query(question)
     all_candidates = []
 
     for q in expansion_queries:
         emb = embedding_service.embed_query(q)
-        results = vector_store.search(emb, k=60)
+        results = qdrant_store.search(
+            query_embedding=emb,
+            user_id=user_id,
+            k=60
+        )
 
         for r in results:
-            faiss_id = str(r["document_id"]).strip().lower()
-            if faiss_id in allowed_docs:
+            doc_id = str(r["document_id"]).strip()
+            if doc_id in allowed_docs:
                 all_candidates.append(r)
+                
 
         
     if not all_candidates:
-        print("No candidates after filter. Allowed:", allowed_docs)
         return {"answer": "No relevant information found.", "chunks_used": []}
  
     # Dedup + filtering

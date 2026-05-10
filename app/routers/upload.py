@@ -27,7 +27,8 @@ async def upload_doc(
     # dedup check
     existing_doc = db.query(Document).filter(
         Document.user_id == user_id,
-        Document.file_hash == file_hash
+        Document.file_hash == file_hash,
+        Document.is_active == True
     ).first()
 
     if existing_doc:
@@ -52,7 +53,8 @@ async def upload_doc(
     try:
         result = ingestion_service.process_file(
             file,
-            document_id
+            document_id,
+            user_id
         )
 
         doc.status = "ready"
