@@ -11,6 +11,7 @@ colorama==0.4.6
 cryptography==46.0.5
 distro==1.9.0
 ecdsa==0.19.2
+faiss-cpu==1.13.2
 fastapi==0.129.0
 filelock==3.24.2
 fsspec==2026.2.0
@@ -53,7 +54,6 @@ pypdfium2==5.4.0
 python-dotenv==1.2.1
 python-jose==3.5.0
 python-multipart==0.0.22
-pywin32==311
 PyYAML==6.0.3
 qdrant-client==1.17.1
 regex==2026.1.15

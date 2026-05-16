@@ -1,6 +1,7 @@
 from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_service
 from app.core.dependencies import embedding_service
 from app.services.qdrant_vector_store import qdrant_store
+from app.core.logger import logger
 
 def process_file(file,document_id,user_id):
     #document_id = str(uuid.uuid4())
@@ -19,7 +20,7 @@ def process_file(file,document_id,user_id):
             document_id=document_id,
             user_id=user_id
         )
-
+    logger.info(f"Processed document: {document_id}")   
     return {
     "filename": file_path.name,
     "text_length": len(raw),

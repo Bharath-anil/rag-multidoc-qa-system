@@ -9,7 +9,7 @@ from qdrant_client.models import (
     MatchValue,
     PayloadSchemaType
 )
-
+from app.core.logger import logger
 from app.core.config import settings
 
 
@@ -46,13 +46,13 @@ class QdrantVectorStore:
                     field_schema=PayloadSchemaType.KEYWORD
                 )
 
-                print(f"Created collection: {self.collection_name}")
+                logger.info(f"Created collection: {self.collection_name}")
 
             else:
-                print(f"Collection exists: {self.collection_name}")
+                logger.info(f"Collection exists: {self.collection_name}")
 
         except Exception as e:
-            print(f"Collection setup error: {e}")
+            logger.error(f"Collection setup error: {e}")
 
     def add_embeddings(
         self,
@@ -86,17 +86,17 @@ class QdrantVectorStore:
                     )
                 )
 
-            print(f"Uploading {len(points)} points")
+            logger.info(f"Uploading {len(points)} points")
 
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=points
             )
 
-            print("Upsert successful")
+            logger.info("Qdrant upsert successful")
 
         except Exception as e:
-            print(f"Add embeddings error: {e}")
+            logger.error(f"Add embeddings error: {e}")
             raise
 
     def search(
@@ -133,7 +133,7 @@ class QdrantVectorStore:
 
             results = response.points
 
-            print(f"Retrieved {len(results)} results")
+            logger.info(f"Retrieved {len(results)} results")
 
             formatted = []
 
@@ -148,7 +148,7 @@ class QdrantVectorStore:
             return formatted
 
         except Exception as e:
-            print(f"Search error: {e}")
+            logger.error(f"Search error: {e}")
             raise
 
 

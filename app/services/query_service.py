@@ -4,7 +4,7 @@ import re
 from sqlalchemy.orm import Session
 from app.models.document import Document
 from app.services.qdrant_vector_store import qdrant_store
-
+from app.core.logger import logger
 def extract_top_sentences(question, chunks, top_n=3):
     stopwords = {"what", "is", "the", "a", "an", "of"}
     question_words = set(
@@ -137,7 +137,7 @@ def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
     candidate_chunks = boosted_chunks
     # Rerank
     question_embedding = embedding_service.embed_query(question)
-
+    logger.info(f"Retrieved {len(all_candidates)} candidates")
     reranked = rerank_service.rerank(
     question,
     candidate_chunks,
@@ -155,6 +155,7 @@ def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
     top_chunks = [item["text"] for item in selected]
 
     context_chunks = top_chunks[:2] 
+    logger.info(f"Generating answer for user: {user_id}")
     answer = generation_service.generate_answer(
         question,
         context_chunks

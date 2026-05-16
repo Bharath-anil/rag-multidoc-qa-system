@@ -8,7 +8,7 @@ import hashlib
 from app.core.dependencies import get_db
 from app.models.user import User
 from app.core.config import settings
-
+from app.core.logger import logger
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
@@ -42,6 +42,7 @@ def get_current_user(
             user_id = payload.get("user_id")
 
             if not user_id:
+                logger.warning("Invalid JWT token")
                 raise HTTPException(status_code=401, detail="Invalid token")
 
         except JWTError:
