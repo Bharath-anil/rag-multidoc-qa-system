@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import api from "../services/api"
 function Dashboard() {
 
@@ -7,7 +7,9 @@ function Dashboard() {
     const [question, setQuestion] = useState("")
     const [answer, setAnswer] = useState("")
     const [asking, setAsking] = useState(false)
+    const [documents, setDocuments] = useState<any[]>([])
 
+    //Upload function
     const handleUpload = async () => {
 
     if (!file) {
@@ -15,36 +17,37 @@ function Dashboard() {
         return
     }
 
-    try {
-        setLoading(true)
-        const formData = new FormData()
+        try {
+            setLoading(true)
+            const formData = new FormData()
 
-        formData.append("file", file)
+            formData.append("file", file)
 
-        const token = localStorage.getItem("token")
+            const token = localStorage.getItem("token")
 
-        const response = await api.post(
-        "/upload",
-        formData,
-        {
-            headers: {
-            Authorization: `Bearer ${token}`
+            const response = await api.post(
+            "/upload",
+            formData,
+            {
+                headers: {
+                Authorization: `Bearer ${token}`
+                }
             }
+            )
+
+            console.log(response.data)
+            setLoading(false)
+            alert("PDF uploaded successfully")
+            fetchDocuments()
+        } catch (error) {
+
+            console.log(error)
+            setLoading(false)
+            alert("Upload failed")
         }
-        )
-
-        console.log(response.data)
-        setLoading(false)
-        alert("PDF uploaded successfully")
-        
-    } catch (error) {
-
-        console.log(error)
-        setLoading(false)
-        alert("Upload failed")
-    }
     }
 
+    //Question function
     const handleAsk = async () => {
 
     if (!question) {
@@ -52,36 +55,99 @@ function Dashboard() {
         return
     }
 
-    try {
+        try {
 
-        setAsking(true)
+            setAsking(true)
 
-        const token = localStorage.getItem("token")
+            const token = localStorage.getItem("token")
 
-        const response = await api.post(
-        "/ask",
-        {
-            question
-        },
-        {
-            headers: {
-            Authorization: `Bearer ${token}`
+            const response = await api.post(
+            "/ask",
+            {
+                question
+            },
+            {
+                headers: {
+                Authorization: `Bearer ${token}`
+                }
             }
+            )
+
+            setAnswer(response.data.answer)
+
+            setAsking(false)
+
+        } catch (error) {
+
+            console.log(error)
+
+            setAsking(false)
+
+            alert("Question failed")
         }
+    }
+
+    // get all document 
+    const fetchDocuments = async () => {
+
+        try {
+
+            const token = localStorage.getItem("token")
+
+            const response = await api.get(
+            "/documents",
+            {
+                headers: {
+                Authorization: `Bearer ${token}`
+                }
+            }
+            )
+
+            console.log(response.data)
+
+            setDocuments(response.data)
+
+        } catch (error) {
+
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+
+    fetchDocuments()
+
+    }, [])
+
+
+    //delete function
+    const handleDelete =async(documentId:string)=>{
+        try{
+            const token =localStorage.getItem("token")
+
+            await api.delete("/documents/delete",
+            {
+                headers:{
+                    Authorization:`Bearer ${token}`
+                },
+                data: {
+                    document_id: documentId
+                }
+            }
+        )
+        
+        setDocuments((prevDocuments: any[]) =>
+            prevDocuments.filter(
+                (doc: any) => doc.id !== documentId
+            )
         )
 
-        setAnswer(response.data.answer)
+        } catch (error) {
 
-        setAsking(false)
+            console.log(error)
 
-    } catch (error) {
-
-        console.log(error)
-
-        setAsking(false)
-
-        alert("Question failed")
-    }
+            alert("Delete failed")
+        }
     }
 
     return (
@@ -108,7 +174,23 @@ function Dashboard() {
                 <button onClick={handleUpload}>
                   {loading ? "Uploading..." : "Upload PDF"}
                 </button>
-                
+
+                <br />
+                <br />
+
+                <h2>Uploaded Documents</h2>
+
+                {   
+                    documents.map((doc:any)=>(
+                        <div key={doc.id}>
+                            <p>{doc.filename}</p>
+                            <button onClick={() => handleDelete(doc.id)} >
+                                Delete
+                            </button>
+                        </div>
+                    ))
+                }
+
                 <br />
                 <br />
 
