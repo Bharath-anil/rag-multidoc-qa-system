@@ -1,5 +1,6 @@
 import { useState } from "react"
 import api from "../services/api"
+import AuthForm from "../components/AuthForm"
 
 function Register(){
     const [username, setUsername] = useState("")
@@ -22,33 +23,15 @@ function Register(){
     }
 
     return (
-        <div>
-            <h1>Register</h1>
-
-            <input
-                type="text"
-                placeholder="Enter User Name"
-                value={username}
-                onChange={(e)=> setUsername(e.target.value)}
-            />
-                
-            <br />
-            <br />
-
-            <input
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <br />
-            <br />
-
-            <button onClick={handleRegister}>Register</button>
-
-
-        </div>
+            <AuthForm
+                title="Register"
+                username={username}
+                password={password}
+                setUsername={setUsername}
+                setPassword={setPassword}
+                handleSubmit={handleRegister}
+                buttonText="Register"
+                />
    )
 }
 

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import api from "../services/api"
 import { useNavigate } from "react-router-dom"
+import AuthForm from "../components/AuthForm"
 
 function Login(){
 
@@ -12,7 +13,7 @@ function Login(){
         try{
             const response = await api.post("/login",{
                 username,
-                password
+                password    
             })   
             
             localStorage.setItem("token",response.data.access_token)
@@ -26,30 +27,15 @@ function Login(){
     }   
 
     return (
-        <div>
-            <h1>Login</h1>
-
-            <input
-            type="text"
-            placeholder="Enter the username"
-            value={username}
-            onChange={(e)=>setUserName(e.target.value)}
-            />
-            <br/>
-            <br/>
-
-            <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=> setPassword(e.target.value)}
-            />
-            <br/>
-            <br/>
-
-            <button onClick={handleLogin}>Login </button>
-
-        </div>
+        <AuthForm
+                title="Login"
+                username={username}
+                password={password}
+                setUsername={setUserName}
+                setPassword={setPassword}
+                handleSubmit={handleLogin}
+                buttonText="Login"
+                />
     )
 }
 
