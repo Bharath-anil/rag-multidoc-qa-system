@@ -5,6 +5,7 @@ import {
   FileText,
   Upload,
 } from "lucide-react"
+import { toast } from "sonner"
 
 type SidebarProps = {
   sidebarOpen: boolean
@@ -54,17 +55,13 @@ function Sidebar({
       const token = localStorage.getItem("token")
 
       await api.delete(
-        "/documents/delete",
+        `/documents/${documentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
-          },
-          data: {
-            document_id: documentId
           }
         }
       )
-
       setDocuments((prevDocuments: any[]) =>
         prevDocuments.filter(
           (doc: any) => doc.id !== documentId
@@ -75,7 +72,7 @@ function Sidebar({
 
       console.log(error)
 
-      alert("Delete failed")
+      toast.error("Delete failed", { position: "top-right" })
     }
   }
 
@@ -83,7 +80,7 @@ function Sidebar({
   const handleUpload = async () => {
 
     if (!file) {
-      alert("Please select a PDF")
+      toast.info("Please select a PDF", { position: "top-right" })
       return
     }
 
@@ -111,7 +108,7 @@ function Sidebar({
 
       setLoading(false)
 
-      alert("PDF uploaded successfully")
+      toast.success("PDF uploaded successfully", { position: "top-right" })
 
       fetchDocuments()
 
@@ -121,7 +118,7 @@ function Sidebar({
 
       setLoading(false)
 
-      alert("Upload failed")
+      toast.error("Upload failed", { position: "top-right" })
     }
   }
 
