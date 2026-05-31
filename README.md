@@ -142,7 +142,15 @@ User Authentication
 - Loading state handling
 - API integration with FastAPI backend
 - Dashboard-based workflow
-
+- Chat-style conversation UI
+- Markdown answer rendering
+- Auto-scrolling chat history
+- Toast notifications
+- Collapsible sidebar
+- User profile section
+- Logout functionality
+- Empty state handling
+- Account deactivation dialog
 ---
 
 # System Pipeline
@@ -424,15 +432,37 @@ app/
 
 frontend/
 ├── src/
-│   ├── pages/
 │   ├── components/
+│   │   ├── AuthForm.tsx
+│   │   ├── ChatArea.tsx
+│   │   ├── DashboardLayout.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── ui/
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── dialog.tsx
+│   │       ├── input.tsx
+│   │       └── ...
+│   │
+│   ├── pages/
+│   │   ├── Login.tsx
+│   │   ├── Register.tsx
+│   │   └── Dashboard.tsx
+│   │
 │   ├── services/
+│   │   └── api.ts
+│   │
+│   ├── lib/
+│   │   └── utils.ts
+│   │
 │   ├── App.tsx
-│   └── main.tsx
+│   ├── main.tsx
+│   └── index.css
 │
 ├── package.json
-└── vite.config.ts
-```
+├── components.json
+├── vite.config.ts
+└── tsconfig.app.json
 
 ---
 
@@ -513,7 +543,8 @@ frontend/
 - Chat memory
 - Markdown rendering
 - Streaming AI responses
-
+- Chat-style interface
+- Markdown rendering
 ---
 
 # Key Learnings
