@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-
+import { Link } from "react-router-dom"
 
 type AuthFormProps = {
   title: string
@@ -11,6 +11,10 @@ type AuthFormProps = {
   setPassword: (value: string) => void
   handleSubmit: () => void
   buttonText: string
+
+  footerText: string
+  footerLinkText: string
+  footerLinkTo: string
 }
 
 function AuthForm({
@@ -21,6 +25,9 @@ function AuthForm({
   setPassword,
   handleSubmit,
   buttonText,
+  footerText,
+  footerLinkText,
+  footerLinkTo
 }: AuthFormProps) {
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
@@ -59,6 +66,14 @@ function AuthForm({
 
         </CardContent>
 
+        <div className="mt-4 text-center text-sm text-zinc-400">
+
+          {footerText}{" "}
+            <Link  to={footerLinkTo}  className="text-white hover:underline" >
+              {footerLinkText}
+            </Link>
+
+        </div>
       </Card>
 
     </div>

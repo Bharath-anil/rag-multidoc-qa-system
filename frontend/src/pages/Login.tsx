@@ -2,6 +2,7 @@ import { useState } from "react"
 import api from "../services/api"
 import { useNavigate } from "react-router-dom"
 import AuthForm from "../components/AuthForm"
+import { toast } from "sonner"
 
 function Login(){
 
@@ -17,12 +18,13 @@ function Login(){
             })   
             
             localStorage.setItem("token",response.data.access_token)
-            alert("login sucessful")    
+            localStorage.setItem("username", username)
+            toast.success("login sucessful",{ position: "top-right" })    
             navigate("/dashboard")
         }
         catch(error){
             console.log(error)
-            alert("login failed")
+            toast.error("login failed",{ position: "top-right" })
         }
     }   
 
@@ -35,6 +37,9 @@ function Login(){
                 setPassword={setPassword}
                 handleSubmit={handleLogin}
                 buttonText="Login"
+                footerText="Don't have an account?"
+                footerLinkText="Register"
+                footerLinkTo="/register"
                 />
     )
 }

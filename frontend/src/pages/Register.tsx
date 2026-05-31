@@ -1,7 +1,7 @@
 import { useState } from "react"
 import api from "../services/api"
 import AuthForm from "../components/AuthForm"
-
+import { toast } from "sonner"
 function Register(){
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
@@ -14,11 +14,11 @@ function Register(){
                 password
             })
             console.log(response.data)
-            alert("User registered Sucessfully")
+            toast.success("User registered Sucessfully",{ position: "top-right" })
         }
         catch (error){
             console.log(error)
-            alert("Registeration failed")
+            toast.error("Registeration failed",{ position: "top-right" })
         }
     }
 
@@ -31,6 +31,9 @@ function Register(){
                 setPassword={setPassword}
                 handleSubmit={handleRegister}
                 buttonText="Register"
+                footerText="Already have an account?"
+                footerLinkText="Login"
+                footerLinkTo="/"
                 />
    )
 }
