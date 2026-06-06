@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.document import Document
+from datetime import datetime, UTC
 
 def get_all_documents(user_id:str,db:Session):
     docs = db.query(Document).filter(
@@ -30,6 +31,7 @@ def delete_document( document_id: str, user_id: str, db: Session ):
         }
     
     doc.is_active = False
+    doc.deleted_at = datetime.now(UTC)
     db.commit()
     
     return {

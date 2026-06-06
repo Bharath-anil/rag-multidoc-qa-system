@@ -28,5 +28,9 @@ class Document(Base):
         onupdate=func.now()
     )
     is_active: Mapped[bool] = mapped_column(
-    default=True
+        default=True
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True
     )
