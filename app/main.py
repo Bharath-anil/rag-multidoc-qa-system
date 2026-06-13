@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.routers import auth
-from app.routers import upload, query,document
+from app.routers import upload, query,document,conversation_router
 from app.core.database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 @asynccontextmanager
@@ -21,3 +21,4 @@ app.include_router(auth.router)
 app.include_router(upload.router)
 app.include_router(query.router)
 app.include_router(document.router)
+app.include_router(conversation_router.router)
