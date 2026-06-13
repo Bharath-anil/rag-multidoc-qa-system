@@ -11,7 +11,7 @@ from qdrant_client.models import (
 )
 from app.core.logger import logger
 from app.core.config import settings
-
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 class QdrantVectorStore:
 
@@ -150,6 +150,22 @@ class QdrantVectorStore:
         except Exception as e:
             logger.error(f"Search error: {e}")
             raise
+
+
+    def delete_document_vectors( self, document_id: str ):
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=Filter(
+                must=[
+                    FieldCondition(
+                        key="document_id",
+                        match=MatchValue(
+                            value=document_id
+                        )
+                    )
+                ]
+            )
+        )
 
 
 qdrant_store = QdrantVectorStore()
