@@ -8,12 +8,17 @@ def generate_answer(question, retrieved_chunks):
     if not retrieved_chunks:
         return "No answer found."
 
-    context = "\n".join(retrieved_chunks[:2])
+    context = "\n ".join(retrieved_chunks[:5])
 
     prompt = f"""
-        Answer the question in ONE short sentence.
+        Answer using only the provided context.
 
-        Only return the final answer.
+        Rules:
+        - Be concise and factual.
+        - If the answer is not in the context, say:
+        "The information is not available in the provided documents."
+        - Do not make up information.
+
         Do NOT include explanations.
         Do NOT repeat context.
 

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.conversation import Conversation
 from app.models.message import Message
 from datetime import datetime, UTC
+from fastapi import HTTPException
 
 def create_conversation(user_id:str,db:Session):
     conversation =Conversation(user_id = user_id, title="New Chat")
@@ -23,6 +24,20 @@ def get_conversations( user_id: str, db: Session ):
 
 
 def save_message( conversation_id: str, role: str, content: str, db: Session ):
+
+    # Retrieve the conversation first
+    conversation = (
+            db.query(Conversation)
+            .filter(Conversation.id == conversation_id)
+            .first()
+        )
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    if role == "user" and conversation.title == "New Chat":
+        conversation.title = content.strip()[:50]
+
     message = Message(
         conversation_id=conversation_id,
         role=role,
@@ -30,11 +45,13 @@ def save_message( conversation_id: str, role: str, content: str, db: Session ):
     )
 
     db.add(message)
+
+    conversation.updated_at = datetime.now(UTC)
+
     db.commit()
     db.refresh(message)
 
     return message
-
 
 
 def get_messages( conversation_id: str,  db: Session ):
@@ -45,6 +62,7 @@ def get_messages( conversation_id: str,  db: Session ):
         Message.created_at
     ).all()
 )
+
 
 #delete conversation 
 def delete_conversation( conversation_id: str, user_id: str, db: Session ):
