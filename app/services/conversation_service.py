@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.conversation import Conversation
 from app.models.message import Message
+from datetime import datetime, UTC
 
 def create_conversation(user_id:str,db:Session):
     conversation =Conversation(user_id = user_id, title="New Chat")
@@ -61,8 +62,38 @@ def delete_conversation( conversation_id: str, user_id: str, db: Session ):
         }
 
     conversation.is_active = False
+    conversation.deleted_at = datetime.now(UTC)
     db.commit()
 
     return {
         "message": "Conversation deleted successfully"
+    }
+
+def get_deleted_conversation( user_id: str, db: Session):
+    return ( db.query(Conversation)
+        .filter(
+            Conversation.user_id == user_id,
+            Conversation.is_active == False
+        ) .order_by(Conversation.deleted_at.desc()).all())
+
+
+def restore_conversation( conversation_id: str, user_id: str, db: Session):
+    conversation  = ( db.query(Conversation)
+        .filter(
+            Conversation.id == conversation_id,
+            Conversation.user_id == user_id,
+            Conversation.is_active == False
+        ).first())
+
+    if not conversation :
+        return {
+            "message": "conversation  not found"
+        }
+
+    conversation .is_active = True
+    conversation .deleted_at = None
+    db.commit()
+
+    return {
+        "message": "conversation  restored successfully"
     }

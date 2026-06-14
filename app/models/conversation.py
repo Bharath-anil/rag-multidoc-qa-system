@@ -13,3 +13,4 @@ class Conversation(Base):
     created_at: Mapped[datetime] = mapped_column( DateTime, default=func.now())
     updated_at: Mapped[datetime] = mapped_column( DateTime, default=func.now(), onupdate=func.now())
     is_active: Mapped[bool] = mapped_column( default=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime,nullable=True)

@@ -54,3 +54,19 @@ async def delete_conversation( conversation_id: str, user_id: str = Depends(get_
         user_id,
         db
     )
+
+
+@router.get("/converstion/deleted")
+async def get_deleted_documents( user_id: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    return conversation_service.get_deleted_conversation(
+        user_id,
+        db
+    )
+
+@router.post("/conversation/{conversation_id}/restore")
+async def restore_document( conversation_id: str, user_id: str = Depends(get_current_user),  db: Session = Depends(get_db)):
+    return conversation_service.restore_conversation(
+        conversation_id,
+        user_id,
+        db
+    )
