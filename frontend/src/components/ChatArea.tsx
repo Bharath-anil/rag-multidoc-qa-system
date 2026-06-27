@@ -3,16 +3,30 @@ import { useState,useEffect, useRef  } from "react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
 
-function ChatArea() {
+ type Message = {
+          role: "user" | "assistant"
+          content: string
+        }
+        
+interface ChatAreaProps {
+  messages: Message[]
+  setMessages: React.Dispatch<
+    React.SetStateAction<Message[]>
+  >
+  activeConversationId: string | null
+}
+
+function ChatArea({
+    messages,
+    setMessages,
+    activeConversationId,
+  }: ChatAreaProps) {
     const messagesEndRef = useRef<HTMLDivElement | null>(null)
     const [question, setQuestion] = useState("")
-    const [messages, setMessages] = useState<
-    {
-        role: "user" | "assistant"
-        content: string
-    }[] >([])
+   
     const [asking, setAsking] = useState(false)
-
+      
+        
     useEffect(() => {
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -22,8 +36,17 @@ function ChatArea() {
 
     //Question function
     const handleAsk = async () => {
+    
+    if (!activeConversationId) {
+      toast.info(
+        "Create or select a chat first",
+        { position: "top-right" }
+      )
+      return
+    }
+        
 
-    if (!question) {
+    if (!question.trim()) {
         toast.info("Enter a question", { position: "top-right" })
         return
     }
@@ -42,19 +65,12 @@ function ChatArea() {
 
       try {
 
-        const token = localStorage.getItem("token")
 
-        const response = await api.post(
-          "/ask",
-          {
-            question: currentQuestion,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        const response = await api.post("/ask", {
+          conversation_id: activeConversationId,
+          question: currentQuestion,
+          document_ids: [],
+        })
 
         setMessages((prev) => [
           ...prev,
@@ -145,14 +161,15 @@ function ChatArea() {
 
           <input
             type="text"
+            disabled={asking}
             placeholder="Ask a question..."
             className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white outline-none"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
           />
 
-          <button className="bg-white text-black px-5 rounded-lg font-medium" onClick={handleAsk}>
-             {asking ? "Thinking..." : "Send"}
+          <button className="bg-white text-black px-5 rounded-lg font-medium" onClick={handleAsk} disabled={asking}>
+             {asking ? "Thinking..." : "Send"} 
           </button>
 
         </div>
