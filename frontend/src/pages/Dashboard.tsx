@@ -1,9 +1,9 @@
 import { useState,useEffect } from "react"
 import DashboardLayout from "../components/DashboardLayout"
 import Sidebar from "../components/Sidebar"
-import ConversationSidebar from "../components/ConversationSidebar"
 import ChatArea from "../components/ChatArea"
 import api from "../services/api"
+import { toast } from "sonner"
 
 type Message = {
   role: "user" | "assistant"
@@ -14,7 +14,7 @@ function Dashboard() {
   const [conversations, setConversations] = useState([])
   const [activeConversationId, setActiveConversationId] =useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
-
+  const [deletedConversations, setDeletedConversations] = useState([])
 
   const fetchConversations = async () => {
     try {
@@ -47,9 +47,7 @@ function Dashboard() {
     }
   }
 
-  useEffect(() => {
-      fetchConversations()
-    }, [])
+
 
   useEffect(() => {
       if (!activeConversationId) return
@@ -79,24 +77,73 @@ function Dashboard() {
     }
   }
   
+  const handleDeleteConversation = async ( conversationId: string ) => {
+    try {
+      await api.delete(  `/conversations/${conversationId}` )
+
+      setConversations(prev =>  prev.filter( c => c.id !== conversationId )  )
+
+      if ( activeConversationId === conversationId  ) {
+        setActiveConversationId(null)
+        setMessages([])
+      }
+      fetchDeletedConversations()
+      toast.success( "Conversation moved to recycle bin", { position: "top-right" } )
+    } catch (error) {
+      toast.error( "Failed to delete conversation", { position: "top-right" } )
+    }
+  }
+    
+  const fetchDeletedConversations = async () => {
+    try {
+      const response = await api.get(
+        "/conversation/deleted"
+      )
+      console.log(
+  "Sidebar deleted conversations:",
+  deletedConversations
+)
+      setDeletedConversations(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const handleRestoreConversation = async (  conversationId: string ) => {
+    try {
+      await api.post(`/conversation/${conversationId}/restore`)
+      fetchConversations()
+      fetchDeletedConversations()
+      toast.success( "Conversation restored", {  position: "top-right"})
+      } catch {
+          toast.error("Restore failed",{position: "top-right"})
+        }
+    }
+  
+  useEffect(() => {
+    fetchConversations()
+    fetchDeletedConversations()
+  }, [])
 
   return (
     <DashboardLayout
         sidebarOpen={sidebarOpen}
         sidebar={
-          <ConversationSidebar
-            conversations={conversations}
-            activeConversationId={  activeConversationId }
-            onSelectConversation={ setActiveConversationId }
-            onNewChat={handleNewChat}
-          />
-            // <Sidebar
-            //     // sidebarOpen={sidebarOpen}
-            //     // setSidebarOpen={setSidebarOpen}
-            // />
+            <Sidebar
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              onSelectConversation={setActiveConversationId}
+              handleDeleteConversation={handleDeleteConversation}
+              onNewChat={handleNewChat}
+              deletedConversations={deletedConversations}
+              handleRestoreConversation={handleRestoreConversation}
+              refreshDeletedConversations={ fetchDeletedConversations}
+            />
         }
     >
-       <ChatArea
+      <ChatArea
           messages={messages}
           setMessages={setMessages}
           activeConversationId={
@@ -105,7 +152,7 @@ function Dashboard() {
         />
     </DashboardLayout>
   )
-}
+  }
 
 
 export default Dashboard

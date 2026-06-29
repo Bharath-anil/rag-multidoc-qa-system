@@ -4,16 +4,42 @@ import { PanelLeft, FileText, Upload} from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription} from "./ui/dialog"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
+import ConversationSidebar from "../components/ConversationSidebar"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,SheetDescription}from "./ui/sheet"
+import { Button } from "./ui/button"
+import { Trash2, RotateCcw } from "lucide-react"
 
+type Conversation = {
+  id: string
+  title: string
+  updated_at: string
+}
 
 type SidebarProps = {
   sidebarOpen: boolean
-  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setSidebarOpen: React.Dispatch< React.SetStateAction<boolean>>
+  conversations: Conversation[]
+  activeConversationId: string | null
+  onSelectConversation: (id: string) => void
+  handleDeleteConversation: ( id: string) => void
+  onNewChat: () => void
+  deletedConversations: Conversation[]
+  handleRestoreConversation: ( id: string ) => void
+  refreshDeletedConversations: () => void
 }
+
 
 function Sidebar({
   sidebarOpen,
   setSidebarOpen,
+  conversations,
+  activeConversationId,
+  onSelectConversation,
+  handleDeleteConversation,
+  onNewChat,
+  deletedConversations,
+  handleRestoreConversation,
+  refreshDeletedConversations
 }: SidebarProps) {
 
   const [file, setFile] = useState<File | null>(null)
@@ -28,17 +54,7 @@ function Sidebar({
 
     try {
 
-      const token = localStorage.getItem("token")
-
-      const response = await api.get(
-        "/documents",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
+      const response = await api.get( "/documents")
       setDocuments(response.data)
 
     } catch (error) {
@@ -52,16 +68,7 @@ function Sidebar({
 
     try {
 
-      const token = localStorage.getItem("token")
-
-      await api.delete(
-        `/documents/${documentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+      await api.delete(`/documents/${documentId}`)
       setDocuments((prevDocuments: any[]) =>
         prevDocuments.filter(
           (doc: any) => doc.id !== documentId
@@ -89,23 +96,8 @@ function Sidebar({
       setLoading(true)
 
       const formData = new FormData()
-
       formData.append("file", file)
-
-      const token = localStorage.getItem("token")
-
-      const response = await api.post(
-        "/upload",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
-      console.log(response.data)
-
+      const response = await api.post( "/upload", formData)
       setLoading(false)
 
       toast.success("PDF uploaded successfully", { position: "top-right" })
@@ -115,9 +107,7 @@ function Sidebar({
     } catch (error) {
 
       console.log(error)
-
       setLoading(false)
-
       toast.error("Upload failed", { position: "top-right" })
     }
   }
@@ -140,10 +130,8 @@ const handleDeactivate = () => {
 
   return (
     <>
-    <div
-      className={`
-        flex flex-col h-full p-4 transition-all duration-300
-        ${sidebarOpen ? "w-96" : "w-20"}
+    <div className={` flex flex-col h-full p-4 transition-all duration-300 overflow-hidden
+        ${sidebarOpen ? "w-96" : "w-20"} 
       `}
     >
 
@@ -154,7 +142,7 @@ const handleDeactivate = () => {
 
           {sidebarOpen && (
             <h1 className="text-3xl font-bold">
-              AI Assistant
+              DocMind AI
             </h1>
           )}
 
@@ -165,6 +153,16 @@ const handleDeactivate = () => {
             <PanelLeft size={20} />
           </button>
 
+        </div>
+          <div className ="border-b border-zinc-800">
+              <ConversationSidebar
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              onSelectConversation={onSelectConversation}
+              handleDeleteConversation={handleDeleteConversation}
+              onNewChat={onNewChat}
+              sidebarOpen={sidebarOpen} 
+            />
         </div>
 
        <div>
@@ -218,10 +216,10 @@ const handleDeactivate = () => {
 
                         )}
       </div>
-    </div>
-      {/* Documents */}
-      <div className="mt-8 flex-1 overflow-y-auto">
 
+      {/* Documents */}
+      <div className="mt-8 flex-1 overflow-y-auto ">
+        
         {sidebarOpen && (
           <h2 className="text-sm text-zinc-400 mb-3">
             Documents
@@ -287,6 +285,66 @@ const handleDeactivate = () => {
         </div>
 
       </div>
+      
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            variant="outline"
+           className={`mt-4 ${ sidebarOpen ? "w-full" : "w-full justify-center" }`}
+           onClick={refreshDeletedConversations}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+
+            {sidebarOpen && "Recycle Bin"}
+          </Button>
+        </SheetTrigger>
+
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>
+              Deleted Conversations
+            </SheetTitle>
+
+          <SheetDescription>
+            Restore previously deleted conversations.
+          </SheetDescription>
+
+          </SheetHeader>
+
+          <div className="mt-6 space-y-3">
+            {deletedConversations.length === 0 ? (
+              <p className="text-zinc-500">
+                No deleted conversations
+              </p>
+            ) : (
+              deletedConversations.map(
+                (conversation) => (
+                  <div
+                    key={conversation.id}
+                    className="flex items-center justify-between border-b pb-3"
+                  >
+                    <span>
+                      {conversation.title}
+                    </span>
+
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        handleRestoreConversation(
+                          conversation.id
+                        )
+                      }
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Restore
+                    </Button>
+                  </div>
+                )
+              )
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Logout section */}
       <div className="border-t border-zinc-800 pt-4 mt-4">
@@ -344,7 +402,6 @@ const handleDeactivate = () => {
         )}
 
       </div>
-    </div>
     <Dialog
           open={showDeactivateDialog}
           onOpenChange={setShowDeactivateDialog}
@@ -365,29 +422,22 @@ const handleDeactivate = () => {
 
             </DialogHeader>
 
-            <div className="flex gap-3 mt-4">
-
-              <button
-                onClick={() => setShowDeactivateDialog(false)}
-                className="flex-1 bg-zinc-800 hover:bg-zinc-700 rounded-lg p-2"
-              >
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setShowDeactivateDialog(false)}>
                 Cancel
-              </button>
+              </Button>
 
-              <button
-                onClick={() => {
-                  setShowDeactivateDialog(false)
-                  handleDeactivate()
-                }}
-                className="flex-1 bg-red-600 hover:bg-red-500 rounded-lg p-2"
-              >
-                Confirm
-              </button>
-
+              <Button
+                variant="destructive" onClick={handleDeactivate}>
+                Deactivate
+              </Button>
             </div>
+
 
           </DialogContent>
         </Dialog>
+        </div>
+      </div>
    </>
   )
   
