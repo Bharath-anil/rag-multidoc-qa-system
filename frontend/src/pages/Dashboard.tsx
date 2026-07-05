@@ -112,8 +112,12 @@ function Dashboard() {
   const handleRestoreConversation = async (  conversationId: string ) => {
     try {
       await api.post(`/conversation/${conversationId}/restore`)
-      fetchConversations()
-      fetchDeletedConversations()
+      await fetchConversations()
+      await fetchDeletedConversations()
+
+      setActiveConversationId(
+        conversationId
+      )
       toast.success( "Conversation restored", {  position: "top-right"})
       } catch {
           toast.error("Restore failed",{position: "top-right"})

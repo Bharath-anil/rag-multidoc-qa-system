@@ -25,7 +25,7 @@ type SidebarProps = {
   onNewChat: () => void
   deletedConversations: Conversation[]
   handleRestoreConversation: ( id: string ) => void
-  refreshDeletedConversations: () => void
+  // refreshDeletedConversations: () => void
 }
 
 
@@ -39,7 +39,7 @@ function Sidebar({
   onNewChat,
   deletedConversations,
   handleRestoreConversation,
-  refreshDeletedConversations
+  // refreshDeletedConversations
 }: SidebarProps) {
 
   const [file, setFile] = useState<File | null>(null)
@@ -291,59 +291,51 @@ const handleDeactivate = () => {
           <Button
             variant="outline"
            className={`mt-4 ${ sidebarOpen ? "w-full" : "w-full justify-center" }`}
-           onClick={refreshDeletedConversations}
+          //  onClick={refreshDeletedConversations}
           >
             <Trash2 className="mr-2 h-4 w-4" />
 
             {sidebarOpen && "Recycle Bin"}
           </Button>
         </SheetTrigger>
+            <SheetContent className="bg-zinc-950 text-white">
+              <SheetHeader>
+                <SheetTitle>
+                  Deleted Conversations
+                </SheetTitle>
 
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>
-              Deleted Conversations
-            </SheetTitle>
+                <SheetDescription>
+                  Restore previously deleted conversations.
+                </SheetDescription>
+              </SheetHeader>
 
-          <SheetDescription>
-            Restore previously deleted conversations.
-          </SheetDescription>
+              <div className="mt-6">
+                <p className="mb-4">
+                  Count: {deletedConversations.length}
+                </p>
 
-          </SheetHeader>
-
-          <div className="mt-6 space-y-3">
-            {deletedConversations.length === 0 ? (
-              <p className="text-zinc-500">
-                No deleted conversations
-              </p>
-            ) : (
-              deletedConversations.map(
-                (conversation) => (
+                {deletedConversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className="flex items-center justify-between border-b pb-3"
+                    className="mb-3 p-3 border border-zinc-700 rounded"
                   >
-                    <span>
-                      {conversation.title}
-                    </span>
+                    <p>{conversation.title}</p>
 
                     <Button
                       size="sm"
+                      className="mt-2"
                       onClick={() =>
                         handleRestoreConversation(
                           conversation.id
                         )
                       }
                     >
-                      <RotateCcw className="mr-2 h-4 w-4" />
                       Restore
                     </Button>
                   </div>
-                )
-              )
-            )}
-          </div>
-        </SheetContent>
+                ))}
+              </div>
+            </SheetContent>
       </Sheet>
 
       {/* Logout section */}
@@ -402,6 +394,7 @@ const handleDeactivate = () => {
         )}
 
       </div>
+      </div>
     <Dialog
           open={showDeactivateDialog}
           onOpenChange={setShowDeactivateDialog}
@@ -437,7 +430,6 @@ const handleDeactivate = () => {
           </DialogContent>
         </Dialog>
         </div>
-      </div>
    </>
   )
   
