@@ -6,6 +6,7 @@ import { toast } from "sonner"
  type Message = {
           role: "user" | "assistant"
           content: string
+          sources?: string[]
         }
         
 interface ChatAreaProps {
@@ -77,6 +78,7 @@ function ChatArea({
           {
             role: "assistant",
             content: response.data.answer,
+            sources: response.data.sources || [],
           },
         ])
 
@@ -131,6 +133,28 @@ function ChatArea({
                     {message.content}
                 </ReactMarkdown>
             </div>
+
+            {message.role === "assistant" &&
+                message.sources &&
+                message.sources.length > 0 && (
+                  <div className="mt-4 border-t border-zinc-700 pt-3">
+                    <p className="text-xs text-zinc-400 mb-2">
+                      Sources
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {message.sources.map((source) => (
+                        <span
+                          key={source}
+                          className="bg-zinc-800 text-xs px-2 py-1 rounded"
+                        >
+                          📄 {source}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+              )}
+
           </div>
 
         </div>

@@ -18,13 +18,13 @@ def process_file(file,document_id,user_id):
             embeddings=embeddings,
             chunks=batch_chunks,
             document_id=document_id,
-            user_id=user_id
+            user_id=user_id,
+            filename=file.filename
         )
     logger.info(f"Processed document: {document_id}")   
     return {
     "filename": file_path.name,
     "text_length": len(raw),
     "total_chunks": len(chunks),
-    "document_id": document_id,
-    
+    "document_id": document_id
 }

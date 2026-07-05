@@ -2,12 +2,6 @@ import { Plus,MessageSquare,Trash2   } from "lucide-react"
 import { useState } from "react"
 import { AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle,} from "./ui/alert-dialog"
 
-console.log({
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogAction,
-})
-
 interface Conversation {
   id: string
   title: string

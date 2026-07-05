@@ -8,6 +8,7 @@ import { toast } from "sonner"
 type Message = {
   role: "user" | "assistant"
   content: string
+  sources?: string[]
 }
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -40,8 +41,7 @@ function Dashboard() {
       const response = await api.get(
         `/messages/${conversationId}`
       )
-
-      setMessages(response.data)
+      setMessages(response.data)  
     } catch (error) {
       console.error(error)
     }
@@ -88,8 +88,9 @@ function Dashboard() {
         setMessages([])
       }
       fetchDeletedConversations()
-      toast.success( "Conversation moved to recycle bin", { position: "top-right" } )
+      toast.warning( "Conversation moved to recycle bin", { position: "top-right" } )
     } catch (error) {
+      console.log(error)
       toast.error( "Failed to delete conversation", { position: "top-right" } )
     }
   }
@@ -99,10 +100,6 @@ function Dashboard() {
       const response = await api.get(
         "/conversation/deleted"
       )
-      console.log(
-  "Sidebar deleted conversations:",
-  deletedConversations
-)
       setDeletedConversations(response.data)
     } catch (error) {
       console.error(error)

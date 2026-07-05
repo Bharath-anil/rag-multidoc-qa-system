@@ -4,3 +4,4 @@ class MessageRequest(BaseModel):
     conversation_id: str
     role: str
     content: str
+    sources: list[str] = []

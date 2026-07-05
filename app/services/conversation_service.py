@@ -23,7 +23,7 @@ def get_conversations( user_id: str, db: Session ):
     )
 
 
-def save_message( conversation_id: str, role: str, content: str, db: Session ):
+def save_message( conversation_id: str, role: str, content: str,sources:list[str], db: Session ):
 
     # Retrieve the conversation first
     conversation = (
@@ -41,7 +41,8 @@ def save_message( conversation_id: str, role: str, content: str, db: Session ):
     message = Message(
         conversation_id=conversation_id,
         role=role,
-        content=content
+        content=content,
+        sources=sources
     )
 
     db.add(message)

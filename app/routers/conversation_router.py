@@ -29,6 +29,7 @@ async def save_message(payload: MessageRequest,db: Session = Depends(get_db)):
         payload.conversation_id,
         payload.role,
         payload.content,
+        payload.sources,
         db
     )
 

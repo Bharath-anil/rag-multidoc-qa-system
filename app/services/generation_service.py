@@ -11,26 +11,27 @@ def generate_answer(question, retrieved_chunks):
     context = "\n ".join(retrieved_chunks[:5])
 
     prompt = f"""
-        Answer using only the provided context.
+        You are a question answering assistant.
+
+        Use ONLY the information from the context.
 
         Rules:
-        - Be concise and factual.
-        - If the answer is not in the context, say:
-        "The information is not available in the provided documents."
-        - Do not make up information.
-
-        Do NOT include explanations.
-        Do NOT repeat context.
+        - Answer the user's question directly.
+        - Do NOT repeat the question.
+        - Do NOT copy the context verbatim.
+        - Keep the answer under 3 sentences.
+        - If the answer is not found in the context, say:
+        "I couldn't find this information in your uploaded documents."
+        Then provide a short general answer.
 
         Context:
         {context}
 
-        Question:
+        User Question:
         {question}
 
         Answer:
         """
-
     try:
         response = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
@@ -46,33 +47,38 @@ def generate_answer(question, retrieved_chunks):
                 "content": prompt
                 }
             ],
-            "reasoning": {"enabled": True},
-            "max_tokens": 60,
+            "max_tokens": 1024,
             "temperature": 0.1,
         })
         )
 
-
+        response.raise_for_status()
         result = response.json()
 
         choices = result.get("choices")
 
         if not choices:
-            return f"API Error: {result}"
+            return "I couldn't generate an answer right now. Please try again."
 
         message = choices[0].get("message", {})
         content = message.get("content")
-
+        
         if not content:
-            return f"Empty response: {result}"
+            return (
+                "I couldn't generate an answer right now. "
+                "Please try again."
+            )
 
         answer = content.strip()
 
-        # keep only first sentence
-        if "." in answer:
-            answer = answer.split(".")[0] + "."
+        if answer.lower().startswith(question.lower()):
+            answer = answer[len(question):].strip()
+
+        if answer.startswith("?"):
+            answer = answer[1:].strip()
 
         return answer
-
     except Exception as e:
-        return f"Error generating answer: {str(e)}"
+        return (
+            f"Error generating answer: {str(e)}"
+        )

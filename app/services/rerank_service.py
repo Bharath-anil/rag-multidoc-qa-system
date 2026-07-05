@@ -28,8 +28,7 @@ def rerank(question,candidate_chunks,question_embedding,model,k=5):
 
         results.append({
 
-            "text": texts[i],
-            "embedding": embeddings[i],
+            **candidate_chunks[i],
             "score": float(score)
         })
 
@@ -44,7 +43,7 @@ def mmr_select(chunks, query_embedding, lambda_param=0.7, top_k=5):
 
     while candidates and len(selected) < top_k:
         best = None
-        best_score = -1
+        best_score = -1     
 
         for c in candidates:
             relevance = similarity_service.cosine_similarity(

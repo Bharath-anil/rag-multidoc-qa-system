@@ -32,6 +32,7 @@ async def ask_about_doc(payload: QuestionRequest,user_id: str = Depends(get_curr
         conversation_id=payload.conversation_id,
         role="user",
         content=payload.question,
+        sources=[],
         db=db
     )
 
@@ -46,6 +47,7 @@ async def ask_about_doc(payload: QuestionRequest,user_id: str = Depends(get_curr
         conversation_id=payload.conversation_id,
         role="assistant",
         content=response["answer"],
+        sources=response.get("sources", []),
         db=db
     )
 

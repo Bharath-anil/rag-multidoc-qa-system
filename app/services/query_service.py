@@ -151,8 +151,15 @@ def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
         question_embedding,
         top_k=5
     )
-
+    print(selected[0])
     top_chunks = [item["text"] for item in selected]
+    sources = list(
+        {
+            item["filename"]
+            for item in selected
+            if item.get("filename")
+        }
+    )
 
     context_chunks = top_chunks[:2] 
     logger.info(f"Generating answer for user: {user_id}")
@@ -165,8 +172,14 @@ def generate_ans(question: str,user_id:str,db: Session,document_ids = None):
     if not answer or len(answer.split()) < 5:
         answer = " ".join(context_chunks)
 
+    print("SELECTED:")
+    for item in selected:
+        print(item)
+
+    print("SOURCES:", sources)
     return {
         "chunks_used": top_chunks,
+        "sources": sources,
         "answer": answer
     }
 

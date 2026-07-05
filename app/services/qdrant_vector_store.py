@@ -59,7 +59,8 @@ class QdrantVectorStore:
         embeddings,
         chunks,
         document_id,
-        user_id
+        user_id,
+        filename
     ):
 
         try:
@@ -80,12 +81,13 @@ class QdrantVectorStore:
                         payload={
                             "document_id": str(document_id),
                             "user_id": user_id,
+                            "filename": filename,
                             "text": chunk,
-                            "embedding": vector
+                            "embedding": vector,
                         }
+                        
                     )
                 )
-
             logger.info(f"Uploading {len(points)} points")
 
             self.client.upsert(
@@ -99,12 +101,7 @@ class QdrantVectorStore:
             logger.error(f"Add embeddings error: {e}")
             raise
 
-    def search(
-        self,
-        query_embedding,
-        user_id,
-        k=20
-    ):
+    def search( self, query_embedding, user_id, k=20 ):
 
         try:
 
@@ -138,13 +135,27 @@ class QdrantVectorStore:
             formatted = []
 
             for r in results:
-
-                formatted.append({
-                    "document_id": r.payload.get("document_id") if r.payload else None,
-                    "text": r.payload.get("text") if r.payload else None,
-                    "embedding": r.payload.get("embedding") if r.payload else None,
-                    "score": r.score
+               print("PAYLOAD:", r.payload)
+               formatted.append({
+                    "document_id": (
+                        r.payload.get("document_id")
+                        if r.payload else None
+                    ),
+                    "filename": (
+                        r.payload.get("filename")
+                        if r.payload else None
+                    ),
+                    "text": (
+                        r.payload.get("text")
+                        if r.payload else None
+                    ),
+                    "embedding": (
+                        r.payload.get("embedding")
+                        if r.payload else None
+                    ),
+                    "score": r.score,
                 })
+            print("FORMATTED:", formatted[0])
             return formatted
 
         except Exception as e:
