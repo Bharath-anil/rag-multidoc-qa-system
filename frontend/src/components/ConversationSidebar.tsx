@@ -1,4 +1,12 @@
 import { Plus,MessageSquare,Trash2   } from "lucide-react"
+import { useState } from "react"
+import { AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle,} from "./ui/alert-dialog"
+
+console.log({
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogAction,
+})
 
 interface Conversation {
   id: string
@@ -23,6 +31,10 @@ function ConversationSidebar({
   onNewChat,
   sidebarOpen
 }: Props) {
+
+  const [conversationToDelete, setConversationToDelete] =
+    useState<string | null>(null)
+
   return (
     <div className="flex flex-col gap-2">
       <button
@@ -60,7 +72,7 @@ function ConversationSidebar({
                       className="shrink-0"
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDeleteConversation(
+                        setConversationToDelete(
                           conversation.id
                         )
                       }}
@@ -74,8 +86,45 @@ function ConversationSidebar({
               </button>
         ))}
       </div>
+      <AlertDialog open={!!conversationToDelete} onOpenChange={() => setConversationToDelete(null) }>
+          <AlertDialogContent className="bg-zinc-900 text-white border border-zinc-800">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-lg">
+                Delete Conversation?
+              </AlertDialogTitle>
+
+              <AlertDialogDescription className="text-zinc-400">
+                This conversation will be moved to
+                the recycle bin and can be restored
+                later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel>
+                Cancel
+              </AlertDialogCancel>
+
+              <AlertDialogAction
+                onClick={() => {
+                  if (conversationToDelete) {
+                    handleDeleteConversation(
+                      conversationToDelete
+                    )
+                  }
+                  setConversationToDelete(null)
+                }}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
+    
   )
+  
 }
 
 export default ConversationSidebar
