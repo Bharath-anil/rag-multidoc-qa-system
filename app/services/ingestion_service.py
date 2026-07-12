@@ -2,11 +2,25 @@ from . import text_extractor,text_cleaner,chunk_service,embedding_service,file_s
 from app.core.dependencies import embedding_service
 from app.services.qdrant_vector_store import qdrant_store
 from app.core.logger import logger
-
+from fastapi import HTTPException
 def process_file(file,document_id,user_id):
     #document_id = str(uuid.uuid4())
     file_path = file_service.save_file(file)
-    raw = text_extractor.extract_text(file_path)
+
+    try:
+        raw = text_extractor.extract_text(file_path)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded PDF is corrupted or unreadable."
+        )
+
+    if not raw.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="No readable text found in the uploaded PDF."
+        )
+
     cleaned = text_cleaner.clean_data(raw)
     chunks = chunk_service.chunk_data(cleaned)
     chunks = [c for c in chunks if "Table of Contents" not in c]

@@ -1,4 +1,4 @@
-from fastapi import APIRouter,UploadFile,Depends
+from fastapi import APIRouter,UploadFile,Depends,HTTPException
 from app.services import ingestion_service
 from app.core.dependencies import get_db
 from app.core.auth import get_current_user
@@ -13,11 +13,35 @@ async def upload_doc(
     file: UploadFile,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
-):
+):  
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF files are allowed."
+        )
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF files are allowed."
+        )
     document_id = str(uuid.uuid4())
 
     # read file bytes for hashing
     file_bytes = await file.read()
+
+    if not file_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded file is empty."
+        )
+
+    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
+
+    if len(file_bytes) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum allowed file size is 20 MB."
+        )
 
     file_hash = hashlib.sha256(file_bytes).hexdigest()
 
@@ -56,7 +80,7 @@ async def upload_doc(
             document_id,
             user_id
         )
-
+        
         doc.status = "ready"
 
         db.commit()
@@ -67,13 +91,7 @@ async def upload_doc(
             "result": result
         }
 
-    except Exception as e:
+    except Exception:
         doc.status = "failed"
-
         db.commit()
-
-        return {
-            "document_id": document_id,
-            "status": "failed",
-            "error": str(e)
-        }
+        raise
