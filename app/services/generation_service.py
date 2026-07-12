@@ -40,7 +40,7 @@ def generate_answer(question, retrieved_chunks):
             "Content-Type": "application/json",
         },
         data=json.dumps({
-            "model":"openai/gpt-oss-120b:free",# "google/gemma-4-26b-a4b-it:free",
+            "model":"nvidia/nemotron-3-ultra-550b-a55b:free",# "google/gemma-4-26b-a4b-it:free",
             "messages": [
                 {
                 "role": "user",
@@ -49,7 +49,8 @@ def generate_answer(question, retrieved_chunks):
             ],
             "max_tokens": 1024,
             "temperature": 0.1,
-        })
+        }),
+        timeout=30
         )
 
         response.raise_for_status()
@@ -78,7 +79,33 @@ def generate_answer(question, retrieved_chunks):
             answer = answer[1:].strip()
 
         return answer
-    except Exception as e:
+    
+    except requests.exceptions.HTTPError as e:
+
+        if e.response.status_code == 429:
+            return (
+                "The AI service is temporarily busy. "
+                "Showing the most relevant information from your documents instead.\n\n"
+                + retrieved_chunks[0]
+            )
+
         return (
-            f"Error generating answer: {str(e)}"
+            "The AI service is currently unavailable. "
+            "Please try again later."
+        )
+
+    except requests.exceptions.Timeout:
+        return (
+            "The request timed out. "
+            "Please try again."
+        )
+
+    except requests.exceptions.ConnectionError:
+        return (
+            "Unable to connect to the AI service."
+        )
+
+    except Exception:
+        return (
+            "Something went wrong while generating the answer."
         )
