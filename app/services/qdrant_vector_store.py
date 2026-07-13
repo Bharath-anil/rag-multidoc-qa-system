@@ -135,7 +135,7 @@ class QdrantVectorStore:
             formatted = []
 
             for r in results:
-               print("PAYLOAD:", r.payload)
+               logger.info(f"Payload :{r.payload}")
                formatted.append({
                     "document_id": (
                         r.payload.get("document_id")
@@ -155,7 +155,7 @@ class QdrantVectorStore:
                     ),
                     "score": r.score,
                 })
-            print("FORMATTED:", formatted[0])
+            logger.info(f"FORMATTED { formatted[0]}")
             return formatted
 
         except Exception as e:
