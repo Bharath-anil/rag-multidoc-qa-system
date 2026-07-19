@@ -100,7 +100,7 @@ function Sidebar({
       const response = await api.post( "/upload", formData)
       setLoading(false)
 
-      toast.success("PDF uploaded successfully", { position: "top-right" })
+      toast.success("Document uploaded. Processing has started.", { position: "top-right" })
 
       fetchDocuments()
 
@@ -125,13 +125,26 @@ const handleDeactivate = () => {
 
 }
 
-  useEffect(() => {
+  const hasProcessing = documents.some(
+    (doc: any) => doc.status === "processing"
+)
+useEffect(() => {
     fetchDocuments()
-  }, [])
+}, [])
+
+useEffect(() =>  {
+
+    if (!hasProcessing) return
+
+    const interval = setInterval(fetchDocuments, 2000)
+
+    return () => clearInterval(interval)
+
+}, [hasProcessing])
 
   return (
     <>
-    <div className={` flex flex-col h-full p-4 transition-all duration-300 overflow-hidden
+    <div className={`  flex flex-col flex-1  min-h-0 p-4 transition-all duration-300 overflow-hidden
         ${sidebarOpen ? "w-96" : "w-20"} 
       `}
     >
@@ -143,7 +156,7 @@ const handleDeactivate = () => {
 
           {sidebarOpen && (
             <h1 className="text-3xl font-bold">
-              DocMind AI
+              DocuMind
             </h1>
           )}
 
@@ -225,72 +238,97 @@ const handleDeactivate = () => {
       </div>
 
       {/* Documents */}
-      <div className="mt-8 flex-1 overflow-y-auto ">
+      <div className="mt-8 flex-1 min-h-0 flex flex-col ">
         
         {sidebarOpen && (
           <h2 className="text-sm text-zinc-400 mb-3">
             Documents
           </h2>
         )}
+        <div
+            className={`overflow-y-auto ${
+              sidebarOpen
+                ? "max-h-[calc(92vh-520px)]"
+                : "flex-1"
+            }`}
+          >
+          <div className="space-y-2">
+            {documents.length === 0 ? (
 
-        <div className="space-y-2">
-          {documents.length === 0 ? (
+            <div className="text-center text-zinc-500 mt-8">
 
-          <div className="text-center text-zinc-500 mt-8">
-
-            <div className="text-3xl mb-2">
-              📄
-            </div>
-
-            {sidebarOpen && (
-              <>
-                <p>No documents uploaded</p>
-                <p className="text-xs mt-1">
-                  Upload a PDF to get started
-                </p>
-              </>
-            )}
-
-          </div>
-
-        ) : (
-            documents.map((doc: any) => (
-
-              <div
-                  key={doc.id}
-                  className="bg-zinc-800 hover:bg-zinc-700 transition-colors p-4 rounded-xl flex items-center justify-center"
-                  title={doc.filename}
-              >
-
-                  {sidebarOpen ? (
-
-                  <>
-                      <span
-                      className="truncate text-sm font-medium flex-1"
-                      >
-                      {doc.filename}
-                      </span>
-
-                      <button
-                      className="text-red-400 hover:text-red-300 text-xs"
-                      onClick={() => handleDelete(doc.id)}
-                      >
-                      Delete
-                      </button>
-                  </>
-
-                  ) : (
-
-                  <FileText size={18} />
-
-                  )}
-
+              <div className="text-3xl mb-2">
+                📄
               </div>
 
-              ))
-          )}
-        </div>
+              {sidebarOpen && (
+                <>
+                  <p>No documents uploaded</p>
+                  <p className="text-xs mt-1">
+                    Upload a PDF to get started
+                  </p>
+                </>
+              )}
 
+            </div>
+
+          ) : (
+              documents.map((doc: any) => (
+
+                <div
+                    key={doc.id}
+                    className="bg-zinc-800 hover:bg-zinc-700 transition-colors p-4 rounded-xl flex items-center justify-center"
+                    title={doc.filename}
+                >
+
+                    {sidebarOpen ? (
+
+                    <>
+                        <span
+                        className="truncate text-sm font-medium flex-1"
+                        >
+                        {doc.filename}
+                        <div className="mt-1">
+                            {doc.status === "processing" && (
+                                <span className="text-yellow-400 text-xs">
+                                    🟡 Processing...
+                                </span>
+                            )}
+
+                            {doc.status === "ready" && (
+                                <span className="text-green-400 text-xs">
+                                    🟢 Ready
+                                </span>
+                            )}
+
+                            {doc.status === "failed" && (
+                                <span className="text-red-400 text-xs">
+                                    🔴 Failed
+                                </span>
+                            )}
+                        </div>
+                        </span>
+
+                        <button
+                        className="text-red-400 hover:text-red-300 text-xs"
+                        onClick={() => handleDelete(doc.id)}
+                        >
+                        Delete
+                        </button>
+                    </>
+
+                    ) : (
+
+                    <FileText size={18} />
+
+                    )}
+
+                </div>
+
+                ))
+            )}
+          </div>
+        </div>
       </div>
       
       <Sheet>

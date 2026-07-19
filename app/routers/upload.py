@@ -1,4 +1,4 @@
-from fastapi import APIRouter,UploadFile,Depends,HTTPException
+from fastapi import APIRouter,UploadFile,Depends,HTTPException,BackgroundTasks
 from app.services import ingestion_service
 from app.core.dependencies import get_db
 from app.core.auth import get_current_user
@@ -10,6 +10,7 @@ router =APIRouter()
 
 @router.post("/upload")
 async def upload_doc(
+    background_tasks: BackgroundTasks,
     file: UploadFile,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -73,25 +74,15 @@ async def upload_doc(
 
     db.add(doc)
     db.commit()
-
-    try:
-        result = ingestion_service.process_file(
-            file,
-            document_id,
-            user_id
-        )
-        
-        doc.status = "ready"
-
-        db.commit()
-
-        return {
-            "document_id": document_id,
-            "status": doc.status,
-            "result": result
-        }
-
-    except Exception:
-        doc.status = "failed"
-        db.commit()
-        raise
+    background_tasks.add_task(
+        ingestion_service.process_file,
+        file,
+        document_id,
+        user_id
+    )
+    db.refresh(doc)
+    return {
+        "document_id": document_id,
+        "status": "processing",
+        "message": "Document upload started."
+    }

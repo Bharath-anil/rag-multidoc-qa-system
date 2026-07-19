@@ -16,6 +16,9 @@ function DashboardLayout({
 
       <aside
         className={`
+          h-full
+          flex
+          flex-col
           border-r border-zinc-800 bg-zinc-900
           transition-all duration-300
           ${sidebarOpen ? "w-96" : "w-20"}
