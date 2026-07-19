@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom"
 import ConversationSidebar from "../components/ConversationSidebar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,SheetDescription}from "./ui/sheet"
 import { Button } from "./ui/button"
-import { Trash2, RotateCcw } from "lucide-react"
+import { Trash2, Loader2 } from "lucide-react"
 
 type Conversation = {
   id: string
@@ -107,9 +107,10 @@ function Sidebar({
     } catch (error) {
 
       console.log(error)
-      setLoading(false)
       toast.error("Upload failed", { position: "top-right" })
-    }
+    }finally {
+    setLoading(false)
+  }
   }
 
 // logout option 
@@ -175,7 +176,7 @@ const handleDeactivate = () => {
 
                             <label className="flex-1">
 
-                            <div className="bg-zinc-800 hover:bg-zinc-700 transition-colors rounded-xl p-3 text-sm text-zinc-300 cursor-pointer text-center truncate">
+                            <div className={`bg-zinc-800 rounded-xl p-3 text-sm text-zinc-300 text-center truncate ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-700 cursor-pointer"}`}>
                                 {file ? file.name : "Choose PDF"}
                             </div>
 
@@ -183,6 +184,7 @@ const handleDeactivate = () => {
                                 ref={fileInputRef}
                                 type="file"
                                 accept=".pdf"
+                                disabled={loading}
                                 className="hidden"
                                 onChange={(e) => {
                                 if (e.target.files) {
@@ -195,9 +197,14 @@ const handleDeactivate = () => {
 
                             <button
                             onClick={handleUpload}
+                            disabled={loading}
                             className="bg-white text-black rounded-xl px-4 flex items-center justify-center"
                             >
-                            <Upload size={18} />
+                             {loading ? (
+                                  <Loader2 size={18} className="animate-spin" />
+                                ) : (
+                                  <Upload size={18} />
+                                )}
                             </button>
 
                         </div>
