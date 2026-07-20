@@ -40,7 +40,10 @@ function ConversationSidebar({
           )}
       </button>
 
-      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+      <div className={`
+          flex flex-col gap-2 overflow-y-auto custom-scrollbar
+          ${sidebarOpen ? "max-h-64" : "max-h-64"}
+        `}>
         {conversations.map((conversation) => (
           <button
                 key={conversation.id}

@@ -1,11 +1,12 @@
 from fastapi import FastAPI,HTTPException
 from contextlib import asynccontextmanager
 from app.routers import auth
-from app.routers import upload, query,document,conversation_router
+from app.routers import upload, query,document,conversation_router,health
 from app.core.database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.exceptions import (http_exception_handler, validation_exception_handler,general_exception_handler,)
 from fastapi.exceptions import RequestValidationError
+from app.core.middleware import LoggingMiddleware
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
@@ -41,3 +42,5 @@ app.include_router(upload.router)
 app.include_router(query.router)
 app.include_router(document.router)
 app.include_router(conversation_router.router)
+app.include_router(health.router)
+app.add_middleware(LoggingMiddleware)

@@ -248,8 +248,8 @@ useEffect(() =>  {
         <div
             className={`overflow-y-auto ${
               sidebarOpen
-                ? "max-h-[calc(92vh-520px)]"
-                : "flex-1"
+                ? "max-h-[calc(92vh-520px)] custom-scrollbar"
+                : "flex-1 scrollbar-hide"
             }`}
           >
           <div className="space-y-2">
@@ -277,7 +277,9 @@ useEffect(() =>  {
 
                 <div
                     key={doc.id}
-                    className="bg-zinc-800 hover:bg-zinc-700 transition-colors p-4 rounded-xl flex items-center justify-center"
+                    className={` bg-zinc-800 hover:bg-zinc-700 transition-colors rounded-xl
+                                  ${ sidebarOpen ? "p-4 flex items-center justify-between" : "p-2 flex justify-center"
+                                  } `}
                     title={doc.filename}
                 >
 
