@@ -1,6 +1,6 @@
 from fastapi import APIRouter,HTTPException
 from app.services import query_service,conversation_service
-from app.schemas.request import QuestionRequest
+from app.schemas.query import QuestionRequest
 from app.core.dependencies import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
@@ -9,7 +9,13 @@ from app.models.conversation import Conversation
 
 router = APIRouter()
 
-@router.post("/ask")
+@router.post("/ask",
+                summary="Ask questions about uploaded documents",
+                description=(
+                    "Performs semantic retrieval over the user's uploaded "
+                    "documents and generates an answer using the RAG pipeline."
+                ),
+                response_description="Generated answer returned successfully.",)
 async def ask_about_doc(payload: QuestionRequest,user_id: str = Depends(get_current_user),db: Session = Depends(get_db)):
 
     conversation = (

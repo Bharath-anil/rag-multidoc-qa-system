@@ -8,7 +8,13 @@ import uuid
 import hashlib
 router =APIRouter()
 
-@router.post("/upload")
+@router.post("/upload",
+            summary="Upload PDF document",
+            description=(
+            "Uploads a PDF document, validates it, stores metadata, "
+            "and starts background ingestion for text extraction, "
+            "chunking, embedding generation, and Qdrant indexing." ),
+            response_description="Document upload started successfully.",)
 async def upload_doc(
     background_tasks: BackgroundTasks,
     file: UploadFile,

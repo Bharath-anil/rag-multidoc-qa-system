@@ -9,6 +9,9 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("/",
+            summary="Check application health",
+            description="Verifies connectivity to PostgreSQL and Qdrant and reports the overall application health status.",
+            response_description="Health status returned successfully.",)
 def health(db: Session = Depends(get_db)):
     return health_service.get_health_status(db)

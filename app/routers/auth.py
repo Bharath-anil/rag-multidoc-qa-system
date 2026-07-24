@@ -3,19 +3,18 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_db
 from app.models.user import User
 from pydantic import BaseModel
-from app.core.auth import (
-    hash_password,
-    verify_password,
-    create_access_token
-)
-router = APIRouter()
+from app.core.auth import (  hash_password, verify_password, create_access_token)
+from app.schemas.auth import ( LoginRequest, LoginResponse,  RegisterResponse)
+router = APIRouter(prefix="/auth",  tags=["Authentication"],)
 
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
-@router.post("/login")
+@router.post("/login",
+                response_model=LoginResponse,
+                summary="Authenticate user",
+                description="Authenticates a registered user and returns a JWT access token.",
+                response_description="JWT access token generated successfully.",
+                responses={
+                401: {"description": "Invalid username or password."}
+                },)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == data.username).first()
 
@@ -30,7 +29,15 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/register")
+@router.post("/register",
+             response_model=RegisterResponse, 
+             status_code=201,
+             summary="Register new user",
+             description="Creates a new user account with a securely hashed password.",
+             response_description="User account created successfully.",
+             responses={
+                 400: {"description": "Username already exists."}
+             },)
 def register(data: LoginRequest, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.username == data.username).first()
 
