@@ -42,7 +42,7 @@ function ConversationSidebar({
 
       <div className={`
           flex flex-col gap-2 overflow-y-auto custom-scrollbar
-          ${sidebarOpen ? "max-h-64" : "max-h-64"}
+          ${sidebarOpen ? "max-h-55" : "max-h-55"}
         `}>
         {conversations.map((conversation) => (
           <button

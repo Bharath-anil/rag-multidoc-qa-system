@@ -11,7 +11,20 @@ from app.core.middleware import LoggingMiddleware
 async def lifespan(app: FastAPI):
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(title="AI Knowledge Assistant API",
+            description="""
+                Production-ready Retrieval-Augmented Generation (RAG) backend.
+
+                Features:
+                - JWT Authentication
+                - PDF Upload & Processing
+                - Semantic Search
+                - Conversation Management
+                - Health Monitoring
+                - Request Logging
+                """,
+            version="1.0.0",
+            lifespan=lifespan,)
 
 app.add_middleware(
     CORSMiddleware,

@@ -2,6 +2,7 @@ import api from "../services/api"
 import { useState,useEffect, useRef  } from "react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
+import { FileSearch ,FileText  } from "lucide-react";
 
  type Message = {
           role: "user" | "assistant"
@@ -127,6 +128,18 @@ function ChatArea({
                 : "bg-zinc-900 border border-zinc-800 text-white"
             }`}
           >
+            {message.role === "assistant" && (
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-800">
+                <FileSearch
+                  size={18}
+                  className="text-emerald-400"
+                />
+
+                <span className="text-sm font-semibold text-zinc-300">
+                  Doc Assistant
+                </span>
+              </div>
+            )}
             
            <div className="prose prose-invert max-w-none">
                 <ReactMarkdown>
@@ -138,7 +151,7 @@ function ChatArea({
                 message.sources &&
                 message.sources.length > 0 && (
                   <div className="mt-4 border-t border-zinc-700 pt-3">
-                    <p className="text-xs text-zinc-400 mb-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">
                       Sources
                     </p>
 
@@ -148,7 +161,8 @@ function ChatArea({
                           key={source}
                           className="bg-zinc-800 text-xs px-2 py-1 rounded"
                         >
-                          📄 {source}
+                         <FileText size={12} />
+                          {source}
                         </span>
                       ))}
                     </div>

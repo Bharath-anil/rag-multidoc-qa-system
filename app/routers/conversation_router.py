@@ -5,7 +5,7 @@ from app.core.auth import get_current_user
 from app.services import conversation_service
 from app.models.conversation import Conversation
 from app.schemas.conversation import MessageRequest
-router = APIRouter()
+router = APIRouter( tags=["Conversation"])
 
 
 @router.post("/conversations",

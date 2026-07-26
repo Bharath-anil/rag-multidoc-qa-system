@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 from app.core.auth import get_current_user
 from app.models.conversation import Conversation
 
-router = APIRouter()
+router = APIRouter(tags=["Query"])
 
 @router.post("/ask",
                 summary="Ask questions about uploaded documents",

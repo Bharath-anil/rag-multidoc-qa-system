@@ -168,7 +168,7 @@ useEffect(() =>  {
           </button>
 
         </div>
-          <div className ="border-b border-zinc-800">
+          <div className="border-b border-zinc-800 flex-1 min-h-0 flex flex-col">
               <ConversationSidebar
               conversations={conversations}
               activeConversationId={activeConversationId}

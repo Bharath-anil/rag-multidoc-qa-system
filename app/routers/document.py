@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 from app.core.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(tags=["Documents"])
 
 @router.get("/documents",
             summary="Retrieve all active documents",

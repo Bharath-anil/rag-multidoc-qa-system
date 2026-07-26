@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.document import Document
 import uuid
 import hashlib
-router =APIRouter()
+router =APIRouter( tags=["Documents"])
 
 @router.post("/upload",
             summary="Upload PDF document",

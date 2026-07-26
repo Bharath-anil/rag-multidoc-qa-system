@@ -21,8 +21,8 @@ def generate_answer(question, retrieved_chunks):
         - Do NOT copy the context verbatim.
         - Keep the answer under 3 sentences.
         - If the answer is not found in the context, say:
-        "I couldn't find this information in your uploaded documents."
-        Then provide a short general answer.
+        "No relevant information was found in your uploaded documents."
+        Provide a brief answer using general knowledge..
 
         Context:
         {context}
