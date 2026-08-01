@@ -33,7 +33,7 @@ function ConversationSidebar({
     <div className="flex flex-col gap-2">
       <button
         onClick={onNewChat}
-        className="w-full p-3 mb-4 rounded-lg bg-zinc-800 hover:bg-zinc-700"
+        className="w-full p-3 mb-4 rounded-lg bg-zinc-800 hover:bg-zinc-700  border-emerald-500"
       >
        {sidebarOpen ? (   "+ New Chat"  ) : (
             <Plus size={20} />

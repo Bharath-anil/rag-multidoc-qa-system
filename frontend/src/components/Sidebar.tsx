@@ -6,12 +6,18 @@ import { useNavigate } from "react-router-dom"
 import ConversationSidebar from "../components/ConversationSidebar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,SheetDescription}from "./ui/sheet"
 import { Button } from "./ui/button"
-import { Trash2, Loader2,User,CircleCheck,LoaderCircle,CircleAlert,PanelLeft, FileText, Upload } from "lucide-react"
+import { Trash2, Loader2,User,CircleCheck,LoaderCircle,CircleAlert,PanelLeft, FileText, Upload,RotateCcw,MessageSquare } from "lucide-react"
 import { AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle,} from "./ui/alert-dialog"
 type Conversation = {
   id: string
   title: string
   updated_at: string
+}
+
+type Document = {
+    id: string
+    filename: string
+    status: string
 }
 
 type SidebarProps = {
@@ -24,7 +30,6 @@ type SidebarProps = {
   onNewChat: () => void
   deletedConversations: Conversation[]
   handleRestoreConversation: ( id: string ) => void
-  // refreshDeletedConversations: () => void
 }
 
 
@@ -38,7 +43,6 @@ function Sidebar({
   onNewChat,
   deletedConversations,
   handleRestoreConversation,
-  // refreshDeletedConversations
 }: SidebarProps) {
 
   const [file, setFile] = useState<File | null>(null)
@@ -46,6 +50,7 @@ function Sidebar({
   const [loading, setLoading] = useState(false)
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null)
+  const [deletedDocuments, setDeletedDocuments] = useState<Document[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
   const username = localStorage.getItem("username")
@@ -63,6 +68,15 @@ function Sidebar({
     }
   }
 
+  //Fetch deleted Documents
+  const fetchDeletedDocuments = async () => {
+    try {
+      const response = await api.get("/documents/deleted")
+      setDeletedDocuments(response.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   // Delete document
   const handleDelete = async (documentId: string) => {
 
@@ -74,6 +88,7 @@ function Sidebar({
           (doc: any) => doc.id !== documentId
         )
       )
+      fetchDeletedDocuments()
 
     } catch (error) {
 
@@ -111,6 +126,22 @@ function Sidebar({
     }finally {
     setLoading(false)
   }
+  }
+
+  //handle restore of document
+  const handleRestoreDocument = async (documentId: string) => {
+    try {
+      await api.post(`/documents/${documentId}/restore`)
+
+      fetchDocuments()
+      fetchDeletedDocuments()
+
+      toast.success("Document restored", {
+        position: "top-right",
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
 // logout option 
@@ -335,7 +366,7 @@ useEffect(() =>  {
       </div>
       
       <Sheet>
-        <SheetTrigger asChild>
+        <SheetTrigger asChild  onClick={fetchDeletedDocuments}>
           <Button
             variant="outline"
            className={`mt-4 ${ sidebarOpen ? "w-full" : "w-full justify-center" }`}
@@ -347,44 +378,93 @@ useEffect(() =>  {
           </Button>
         </SheetTrigger>
             <SheetContent className="bg-zinc-950 text-white">
-              <SheetHeader>
-                <SheetTitle>
-                  Deleted Conversations
-                </SheetTitle>
+        <SheetHeader>
+          <SheetTitle>
+            Recycle Bin
+          </SheetTitle>
 
-                <SheetDescription>
-                  Restore previously deleted conversations.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                <div className="mt-6">
-                  <p className="mb-4">
-                    Count: {deletedConversations.length}
-                  </p>
+          <SheetDescription>
+            Restore deleted conversations and documents.
+          </SheetDescription>
+        </SheetHeader>
 
-                  {deletedConversations.map((conversation) => (
-                    <div
-                      key={conversation.id}
-                      className="mb-3 p-3 border border-zinc-700 rounded"
-                    >
-                      <p>{conversation.title}</p>
+  <div className="mt-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
 
-                      <Button
-                        size="sm"
-                        className="mt-2"
-                        onClick={() =>
-                          handleRestoreConversation(
-                            conversation.id
-                          )
-                        }
-                      >
-                        Restore
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </SheetContent>
+    {deletedConversations.length > 0 && (
+      <>
+        <h3 className="mb-3 font-semibold text-zinc-300">
+          Deleted Conversations
+        </h3>
+
+        {deletedConversations.map((conversation) => (
+          <div
+            key={conversation.id}
+            className="mb-3 p-3 border border-zinc-700 rounded-lg"
+          >
+           <div className="flex items-center gap-2">
+                <MessageSquare size={16} className="text-emerald-400" />
+                <p className="truncate">{conversation.title}</p>
+            </div>
+
+            <Button
+              size="sm"
+              className="mt-2 flex items-center gap-2"
+              onClick={() =>
+                handleRestoreConversation(conversation.id)
+              }
+            >
+              <RotateCcw size={14} />
+              Restore
+            </Button>
+          </div>
+        ))}
+      </>
+    )}
+    <hr className="my-6 border-zinc-800" />
+    {deletedDocuments.length > 0 && (
+      <>
+        <h3 className="mt-6 mb-3 font-semibold text-zinc-300">
+          Deleted Documents
+        </h3>
+
+        {deletedDocuments.map((doc) => (
+          <div
+            key={doc.id}
+            className="mb-3 p-3 border border-zinc-700 rounded-lg"
+          >
+           <div className="flex items-center gap-2">
+              <FileText size={16} className="text-emerald-400" />
+              <p className="truncate">{doc.filename}</p>
+          </div>
+
+            <Button
+              size="sm"
+              className="mt-2 flex items-center gap-2"
+              onClick={() =>
+                handleRestoreDocument(doc.id)
+              }
+            >
+              <RotateCcw size={14} />
+              Restore
+            </Button>
+          </div>
+        ))}
+      </>
+    )}
+
+    {deletedConversations.length === 0 &&
+      deletedDocuments.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-10 text-zinc-500">
+          <Trash2 size={36} className="mb-3" />
+          <p className="font-medium">Recycle Bin is empty</p>
+          <p className="text-sm mt-1">
+              Deleted conversations and documents will appear here.
+          </p>
+      </div>
+      )}
+
+  </div>
+</SheetContent>
       </Sheet>
 
       {/* Logout section */}
@@ -437,7 +517,7 @@ useEffect(() =>  {
             className="w-full bg-zinc-800 rounded-xl p-3"
             title={username || "User"}
           >
-            👤
+            <User size={20} className="text-zinc-300" />
           </button>
 
         )}
@@ -486,7 +566,7 @@ useEffect(() =>  {
                         </AlertDialogTitle>
           
                         <AlertDialogDescription className="text-zinc-400">
-                          This document will be Deleted.
+                          This document will be moved to the recycle bin and can be restored later.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
           
