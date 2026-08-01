@@ -52,7 +52,7 @@ function ConversationSidebar({
                 }
                 className={`w-full p-3 rounded-lg transition ${
                   activeConversationId === conversation.id
-                    ? "bg-zinc-700"
+                    ? "bg-zinc-800 border-l-2 border-emerald-500"
                     : "hover:bg-zinc-900"
                 }`}
               >

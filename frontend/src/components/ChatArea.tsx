@@ -2,7 +2,7 @@ import api from "../services/api"
 import { useState,useEffect, useRef  } from "react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
-import { FileSearch ,FileText  } from "lucide-react";
+import { FileSearch ,FileText, Upload ,Search,MessageSquare } from "lucide-react";
 
  type Message = {
           role: "user" | "assistant"
@@ -102,9 +102,54 @@ function ChatArea({
 
             {messages.length === 0 ? (
 
-    <div className="h-full flex items-center justify-center text-zinc-500">
-      Ask something about your documents...
+  <div className="h-full flex flex-col items-center justify-center text-center px-6">
+
+    <FileSearch
+      size={56}
+      className="text-emerald-400 mb-6"
+    />
+
+    <h2 className="text-2xl font-semibold text-white">
+      Welcome to DocuMind
+    </h2>
+
+    <p className="mt-3 max-w-md text-zinc-400">
+      Upload one or more PDF documents and explore them using AI-powered semantic search.
+    </p>
+
+    <div className="mt-8 w-full max-w-md space-y-3">
+
+      <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3">
+        <Upload size={18} className="text-emerald-400 shrink-0" />
+        <span className="text-sm text-zinc-300">
+          Upload PDF documents
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3">
+        <Search size={18} className="text-emerald-400 shrink-0" />
+        <span className="text-sm text-zinc-300">
+          Search using semantic retrieval
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3">
+        <MessageSquare size={18} className="text-emerald-400 shrink-0" />
+        <span className="text-sm text-zinc-300">
+          Ask questions about your documents
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3">
+        <FileText size={18} className="text-emerald-400 shrink-0" />
+        <span className="text-sm text-zinc-300">
+          Get answers with source references
+        </span>
+      </div>
+
     </div>
+
+  </div>
 
   ) : (
 
@@ -131,11 +176,11 @@ function ChatArea({
             {message.role === "assistant" && (
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-800">
                 <FileSearch
-                  size={18}
+                  size={20} 
                   className="text-emerald-400"
                 />
 
-                <span className="text-sm font-semibold text-zinc-300">
+                <span className="font-semibold text-zinc-200">
                   Doc Assistant
                 </span>
               </div>

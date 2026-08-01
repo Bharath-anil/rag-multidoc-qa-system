@@ -1,14 +1,13 @@
 import { useState, useEffect,useRef } from "react"
 import api from "../services/api"
-import { PanelLeft, FileText, Upload} from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription} from "./ui/dialog"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 import ConversationSidebar from "../components/ConversationSidebar"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,SheetDescription}from "./ui/sheet"
 import { Button } from "./ui/button"
-import { Trash2, Loader2 } from "lucide-react"
-
+import { Trash2, Loader2,User,CircleCheck,LoaderCircle,CircleAlert,PanelLeft, FileText, Upload } from "lucide-react"
+import { AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle,} from "./ui/alert-dialog"
 type Conversation = {
   id: string
   title: string
@@ -46,6 +45,7 @@ function Sidebar({
   const [documents, setDocuments] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
   const username = localStorage.getItem("username")
@@ -211,7 +211,7 @@ useEffect(() =>  {
                             <button
                             onClick={handleUpload}
                             disabled={loading}
-                            className="bg-white text-black rounded-xl px-4 flex items-center justify-center"
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-4 flex items-center justify-center"
                             >
                              {loading ? (
                                   <Loader2 size={18} className="animate-spin" />
@@ -258,7 +258,8 @@ useEffect(() =>  {
             <div className="text-center text-zinc-500 mt-8">
 
               <div className="text-3xl mb-2">
-                📄
+                <FileText size={40} className="text-zinc-500"/>
+        
               </div>
 
               {sidebarOpen && (
@@ -293,19 +294,19 @@ useEffect(() =>  {
                         <div className="mt-1">
                             {doc.status === "processing" && (
                                 <span className="text-yellow-400 text-xs">
-                                    🟡 Processing...
+                                    <LoaderCircle size={14} className="animate-spin" />
                                 </span>
                             )}
 
                             {doc.status === "ready" && (
                                 <span className="text-green-400 text-xs">
-                                    🟢 Ready
+                                    <CircleCheck size={14} />  Ready
                                 </span>
                             )}
 
                             {doc.status === "failed" && (
                                 <span className="text-red-400 text-xs">
-                                    🔴 Failed
+                                   <CircleAlert size={14} /> Failed
                                 </span>
                             )}
                         </div>
@@ -313,7 +314,7 @@ useEffect(() =>  {
 
                         <button
                         className="text-red-400 hover:text-red-300 text-xs"
-                        onClick={() => handleDelete(doc.id)}
+                        onClick={() => setDocumentToDelete(doc.id)}
                         >
                         Delete
                         </button>
@@ -355,32 +356,33 @@ useEffect(() =>  {
                   Restore previously deleted conversations.
                 </SheetDescription>
               </SheetHeader>
+              <div className="mt-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                <div className="mt-6">
+                  <p className="mb-4">
+                    Count: {deletedConversations.length}
+                  </p>
 
-              <div className="mt-6">
-                <p className="mb-4">
-                  Count: {deletedConversations.length}
-                </p>
-
-                {deletedConversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className="mb-3 p-3 border border-zinc-700 rounded"
-                  >
-                    <p>{conversation.title}</p>
-
-                    <Button
-                      size="sm"
-                      className="mt-2"
-                      onClick={() =>
-                        handleRestoreConversation(
-                          conversation.id
-                        )
-                      }
+                  {deletedConversations.map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className="mb-3 p-3 border border-zinc-700 rounded"
                     >
-                      Restore
-                    </Button>
-                  </div>
-                ))}
+                      <p>{conversation.title}</p>
+
+                      <Button
+                        size="sm"
+                        className="mt-2"
+                        onClick={() =>
+                          handleRestoreConversation(
+                            conversation.id
+                          )
+                        }
+                      >
+                        Restore
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </SheetContent>
       </Sheet>
@@ -396,8 +398,8 @@ useEffect(() =>  {
 
               <div className="flex items-center gap-3">
 
-                <div className="w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center">
-                  👤
+                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border-l-2 border-emerald-500">
+                   <User size={20} className="text-zinc-300" />
                 </div>
 
                 <div>
@@ -407,7 +409,7 @@ useEffect(() =>  {
                   </p>
 
                   <p className="text-xs text-zinc-400">
-                    AI Assistant User
+                    Signed in
                   </p>
 
                 </div>
@@ -476,6 +478,38 @@ useEffect(() =>  {
 
           </DialogContent>
         </Dialog>
+                <AlertDialog open={!!documentToDelete} onOpenChange={() => setDocumentToDelete(null) }>
+                    <AlertDialogContent className="bg-zinc-900 text-white border border-zinc-800">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-lg">
+                          Do You want to delete this document?
+                        </AlertDialogTitle>
+          
+                        <AlertDialogDescription className="text-zinc-400">
+                          This document will be Deleted.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+          
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>
+                          Cancel
+                        </AlertDialogCancel>
+          
+                        <AlertDialogAction
+                          onClick={() => {
+                                 if (documentToDelete) {
+                                      handleDelete(documentToDelete)
+                                  }
+                            setDocumentToDelete(null)
+                          }}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
         </div>
    </>
   )
