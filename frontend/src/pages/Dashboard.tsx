@@ -16,7 +16,7 @@ function Dashboard() {
   const [activeConversationId, setActiveConversationId] =useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [deletedConversations, setDeletedConversations] = useState([])
-
+  const [isMobile, setIsMobile] = useState(false)
   const fetchConversations = async () => {
     try {
       const response = await api.get("/conversations")
@@ -53,7 +53,18 @@ function Dashboard() {
       if (!activeConversationId) return
       fetchMessages(activeConversationId) }, [activeConversationId])
   
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
 
+    checkScreen()
+
+    window.addEventListener("resize", checkScreen)
+
+    return () =>
+      window.removeEventListener("resize", checkScreen)
+  }, [])
   const handleNewChat = async () => {
     try {
       const response = await api.post(

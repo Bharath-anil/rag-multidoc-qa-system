@@ -1,561 +1,227 @@
-# Production-Style Multi-User RAG AI Assistant  
-(FastAPI + React + Qdrant + PostgreSQL)
+# DocuMind
 
----
+> **Production-Ready Multi-User Retrieval-Augmented Generation (RAG) AI
+> Assistant**
 
-## Overview
+DocuMind is a full-stack Retrieval-Augmented Generation (RAG)
+application that allows authenticated users to upload PDF documents,
+index them into a vector database, and ask AI-powered questions grounded
+in their own documents.
 
-Large Language Models often hallucinate when answering questions without grounded context. This project solves that problem by implementing a production-style Retrieval-Augmented Generation (RAG) AI assistant that retrieves relevant document chunks and generates grounded answers using semantic search and LLM generation.
+## Highlights
 
-This system supports:
+-   Multi-user JWT authentication
+-   PDF ingestion pipeline
+-   Semantic retrieval with Qdrant Cloud
+-   Query expansion + hybrid reranking + MMR
+-   OpenRouter LLM integration
+-   Conversation history
+-   Soft delete & recycle bin for documents and conversations
+-   Health check endpoint
+-   Request logging middleware
+-   Dockerized backend
+-   React + TypeScript frontend
 
-- Multi-user document isolation
-- Persistent vector storage
-- Semantic retrieval
-- Hybrid reranking
-- JWT authentication
-- Fullstack frontend integration
-- Interactive AI question-answer workflow
-
-Pipeline:
-
-Authentication → Upload → Process → Embed → Store → Retrieve → Rerank → Generate → Render
-
-The project is designed with a production mindset, focusing on modular architecture, scalability, retrieval quality, persistence, and real-world AI application flow.
-
----
+------------------------------------------------------------------------
 
 # Architecture
 
-```text
-User Authentication
-→ JWT Token Generation
-→ Protected Frontend Routes
-→ PDF Upload
-→ Text Extraction
-→ Chunking
-→ Embedding Generation
-→ Qdrant Vector Storage
-→ Query Expansion
-→ Semantic Retrieval
-→ Hybrid Reranking
-→ MMR Selection
-→ Context Compression
-→ LLM Answer Generation
-→ React Answer Rendering
+``` text
+User
+ │
+ ▼
+React Frontend
+ │
+ ▼
+FastAPI Backend
+ │
+ ├── Authentication (JWT)
+ ├── PDF Upload
+ ├── Text Extraction
+ ├── Text Cleaning
+ ├── Chunking
+ ├── Embedding Generation
+ ├── Qdrant Storage
+ │
+ ▼
+Question → Query Expansion → Semantic Retrieval
+        → Hybrid Reranking → MMR → LLM → Response
 ```
-
----
 
 # Tech Stack
 
 ## Backend
 
-- FastAPI
-- SQLAlchemy
-- Alembic
-- JWT Authentication
-
----
+-   FastAPI
+-   SQLAlchemy
+-   Alembic
+-   PostgreSQL
+-   JWT
 
 ## Frontend
 
-- React
-- TypeScript
-- React Router
-- Axios
-- Vite
+-   React
+-   TypeScript
+-   Vite
+-   Tailwind CSS
+-   shadcn/ui
+-   Lucide Icons
 
----
+## AI
 
-## Database
-
-- PostgreSQL
-
----
-
-## Vector Database
-
-- Qdrant Cloud
-
----
-
-## Embeddings
-
-- sentence-transformers (`all-MiniLM-L6-v2`)
-
----
-
-## LLM
-
-- OpenRouter API
-- `openai/gpt-oss-120b:free`
-
----
-
-## Supporting Libraries
-
-- pdfplumber
-- numpy
-- scikit-learn
-- transformers
-
----
+-   sentence-transformers (all-MiniLM-L6-v2)
+-   Qdrant Cloud
+-   OpenRouter
 
 # Features
 
-## Retrieval Features
+  Feature                Status
+  ---------------------- --------
+  Authentication         ✅
+  PDF Upload             ✅
+  Semantic Search        ✅
+  Hybrid Reranking       ✅
+  Conversation History   ✅
+  Soft Delete            ✅
+  Recycle Bin            ✅
+  Restore                ✅
+  Health Check           ✅
+  Logging Middleware     ✅
 
-- Multi-query retrieval
-- Query expansion
-- Semantic vector search
-- Hybrid reranking
-- MMR diversity selection
-- Deduplication
-- Context compression
-- Fallback answer handling
+# Installation
 
----
-
-## Backend Features
-
-- JWT authentication
-- Multi-user document isolation
-- Persistent cloud vector storage
-- Soft delete document lifecycle
-- Metadata-based retrieval filtering
-- Batch embedding ingestion
-- Modular service architecture
-- Dockerized backend setup
-- Structured logging support
-
----
-
-## Frontend Features
-
-- User registration
-- User login
-- JWT token persistence
-- Protected frontend routes
-- PDF upload interface
-- AI question-answer interface
-- Loading state handling
-- API integration with FastAPI backend
-- Dashboard-based workflow
-- Chat-style conversation UI
-- Markdown answer rendering
-- Auto-scrolling chat history
-- Toast notifications
-- Collapsible sidebar
-- User profile section
-- Logout functionality
-- Empty state handling
-- Account deactivation dialog
----
-
-# System Pipeline
-
-## 1. Authentication Flow
-
-- User registration
-- Password hashing
-- JWT token generation
-- Protected route validation
-- Persistent login state
-
----
-
-## 2. Ingestion Pipeline
-
-- Upload PDF
-- Extract text
-- Clean data
-- Chunk into overlapping segments
-- Generate embeddings
-- Store vectors in Qdrant
-- Store metadata in PostgreSQL
-
----
-
-## 3. Query Pipeline
-
-- Expand user query
-- Generate embeddings
-- Retrieve chunks from Qdrant
-- Filter by active user documents
-- Merge and deduplicate results
-- Rerank using hybrid scoring
-- Select top chunks using MMR
-- Compress context
-- Generate answer using LLM
-- Apply fallback handling
-
----
-
-# Current Capabilities
-
-- Fullstack AI assistant workflow
-- Persistent vector retrieval
-- User-specific document querying
-- Metadata filtering
-- Semantic retrieval
-- Multi-document support
-- Cloud-hosted vector database
-- Protected dashboard access
-- Interactive upload and ask flow
-- Modular backend architecture
-- Migration-based database management
-- Dockerized backend deployment
-
----
-
-# How to Run
-
-## 1. Clone Repository
-
-```bash
-git clone <repo_url>
-cd ai_knowledge_assistant
-```
-
----
-
-## 2. Install Backend Dependencies
-
-```bash
+``` bash
 pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
 ```
 
----
+``` bash
+cd frontend
+npm install
+npm run dev
+```
 
-## 3. Configure Environment Variables
+# Environment Variables
 
-Create a `.env` file:
-
-```env
-DATABASE_URL=your_postgres_url
-
-QDRANT_URL=your_qdrant_url
-QDRANT_API_KEY=your_qdrant_api_key
-QDRANT_COLLECTION=rag_documents
-
-OPENROUTER_API_KEY=your_openrouter_api_key
-
-SECRET_KEY=your_secret_key
+``` env
+DATABASE_URL=
+QDRANT_URL=
+QDRANT_API_KEY=
+QDRANT_COLLECTION=
+OPENROUTER_API_KEY=
+SECRET_KEY=
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
----
-
-## 4. Run Database Migrations
-
-```bash
-alembic upgrade head
-```
-
----
-
-## 5. Start Backend
-
-```bash
-uvicorn app.main:app --reload
-```
-
----
-
-## 6. Start Frontend
-
-```bash
-cd frontend
-
-npm install
-
-npm run dev
-```
-
----
-
-# API Endpoints
-
-## Health Check
-
-```http
-GET /health
-```
-
----
-
-## Register User
-
-```http
-POST /register
-```
-
----
-
-## Login User
-
-```http
-POST /login
-```
-
----
-
-## Upload Document
-
-```http
-POST /upload
-```
-
----
-
-## Ask Question
-
-```http
-POST /ask
-```
-
-### Request Body
-
-```json
-{
-  "question": "What is Redis used for?"
-}
-```
-
----
-
-## Get User Documents
-
-```http
-GET /documents
-```
-
----
-
-## Soft Delete Document
-
-```http
-POST /documents/delete
-```
-
----
-
-# Example Workflow
-
-## 1. Register User
-
-Create account using frontend UI.
-
----
-
-## 2. Login
-
-Receive JWT token and access dashboard.
-
----
-
-## 3. Upload PDF
-
-PDF gets:
-- extracted
-- chunked
-- embedded
-- stored in Qdrant
-
----
-
-## 4. Ask Question
-
-System retrieves relevant chunks and generates grounded answer.
-
----
-
-# Example
-
-## Input
-
-```text
-What is Redis used for?
-```
-
----
-
-## Output
-
-```text
-Redis is an in-memory data store commonly used as a distributed cache.
-```
-
----
-
-# Project Structure
-
-```text
-app/
-├── core/
-│   ├── auth.py
-│   ├── config.py
-│   ├── database.py
-│   ├── dependencies.py
-│   └── logger.py
-│
-├── models/
-│   ├── user.py
-│   └── document.py
-│
-├── routers/
-│   ├── auth.py
-│   ├── upload.py
-│   ├── query.py
-│   └── documents.py
-│
-├── services/
-│   ├── ingestion_service.py
-│   ├── query_service.py
-│   ├── qdrant_vector_store.py
-│   ├── embedding_service.py
-│   ├── generation_service.py
-│   ├── rerank_service.py
-│   ├── similarity_service.py
-│   ├── keyword_service.py
-│   ├── query_expansion_service.py
-│   ├── chunk_service.py
-│   ├── text_cleaner.py
-│   └── text_extractor.py
-│
-├── alembic/
-├── main.py
-└── requirements.txt
-
-
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── AuthForm.tsx
-│   │   ├── ChatArea.tsx
-│   │   ├── DashboardLayout.tsx
-│   │   ├── Sidebar.tsx
-│   │   └── ui/
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── dialog.tsx
-│   │       ├── input.tsx
-│   │       └── ...
-│   │
-│   ├── pages/
-│   │   ├── Login.tsx
-│   │   ├── Register.tsx
-│   │   └── Dashboard.tsx
-│   │
-│   ├── services/
-│   │   └── api.ts
-│   │
-│   ├── lib/
-│   │   └── utils.ts
-│   │
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-│
-├── package.json
-├── components.json
-├── vite.config.ts
-└── tsconfig.app.json
-
----
-
-# Deployment
-
-## Backend
-
-- Dockerized FastAPI application
-- PostgreSQL integration
-- Qdrant Cloud vector database
-
----
-
-## Frontend
-
-- React + Vite frontend
-- API-driven architecture
-- Environment-based API configuration
-
----
-
-# Security Considerations
-
-## Current Security
-
-- JWT-based authentication
-- Password hashing
-- User-level document isolation
-- Protected frontend routes
-
----
-
-## Planned Security Improvements
-
-- OAuth2 login providers
-- Refresh token rotation
-- HTTPS enforcement
-- Rate limiting
-- File validation
-- Secure cookie authentication
-- Role-based access control
-- Secure document storage
-
----
+# API
+
+  Method   Endpoint
+  -------- -------------------------
+  POST     /register
+  POST     /login
+  POST     /upload
+  POST     /ask
+  GET      /documents
+  GET      /documents/deleted
+  POST     /documents/{id}/restore
+  DELETE   /documents/{id}
+  GET      /health
+
+# Engineering Learnings
+
+-   Retrieval quality matters more than model size.
+-   Chunking quality directly impacts retrieval.
+-   Metadata filtering is essential for multi-user systems.
+-   Modular architecture simplifies maintenance.
 
 # Future Improvements
 
-## Retrieval Improvements
+## Authentication & Security
 
-- Hybrid BM25 + vector retrieval
-- Parent-child retrieval
-- Semantic chunking
-- Contextual compression
-- Metadata-aware ranking
-
----
-
-## Infrastructure Improvements
-
-- Background ingestion workers
-- Async processing pipeline
-- Redis caching
-- Streaming responses
-- Structured monitoring
-- Transaction management
-- Query optimization
-- Eager loading strategies
+- Email verification during registration
+- Forgot password / password reset via email
+- OAuth 2.0 authentication (Google, GitHub)
+- Refresh token implementation
+- Secure HTTP-only cookie authentication
+- HTTPS enforcement
+- Rate limiting and request throttling
+- Role-based access control (RBAC)
+- Secure file validation and upload restrictions
+- Audit logging for sensitive operations
 
 ---
 
-## Product Improvements
+## AI & Retrieval
 
-- Chat-style interface
-- Real-time ingestion updates
-- Document management UI
-- Multi-format document ingestion
-- Workspace/folder support
-- Chat memory
-- Markdown rendering
-- Streaming AI responses
-- Chat-style interface
-- Markdown rendering
+- Hybrid BM25 + Vector Search
+- Parent-Child Retrieval
+- Semantic Chunking
+- Contextual Compression
+- Metadata-aware Ranking
+- Cross-Encoder Reranking
+- Streaming AI Responses
+- Support for multiple LLM providers
+- Conversation memory optimization
+- Citation highlighting within answers
+
 ---
 
-# Key Learnings
+## Backend & Infrastructure
 
-- Retrieval quality impacts answer quality more than model size
-- Chunking strategy directly affects retrieval precision
-- Multi-query retrieval improves recall significantly
-- Reranking is critical for precision
-- Context compression improves LLM output quality
-- Vector databases require metadata indexing strategies
-- Persistence architecture matters for scalability
-- Multi-user isolation changes retrieval design completely
-- Fullstack AI systems require both retrieval quality and UX flow
-- Production AI systems require security, persistence, and observability
+- Background workers using Celery/RQ
+- Redis caching layer
+- Asynchronous document ingestion
+- Object storage integration (AWS S3 / MinIO)
+- Container orchestration with Kubernetes
+- CI/CD pipeline with GitHub Actions
+- Prometheus & Grafana monitoring
+- Distributed tracing with OpenTelemetry
+- Database query optimization
+- Automated backup and recovery strategy
+
+---
+
+## User Experience
+
+- Fully responsive mobile interface
+- Drag-and-drop document uploads
+- Upload progress indicators
+- Real-time document processing status
+- Advanced document filtering and search
+- Folder / Workspace organization
+- Dark / Light theme support
+- Document preview before querying
+- Bulk upload support
+- Keyboard shortcuts
+
+---
+
+## Document Management
+
+- Support for DOCX, TXT, Markdown and HTML
+- OCR support for scanned PDFs
+- Version history for uploaded documents
+- Permanent delete with retention policy
+- Document tagging and categorization
+- Batch document operations
+
+---
+
+## Testing & Quality
+
+- Unit tests
+- Integration tests
+- End-to-end testing
+- Load and performance testing
+- Security testing
+- API contract testing
+- Automated code quality checks
+
+
+# Engineering Goals
+
+This project was built to simulate a production-ready Retrieval-Augmented Generation (RAG) system rather than a simple AI chatbot. The primary focus was on modular backend architecture, secure multi-user document isolation, scalable retrieval pipelines, maintainable code organization, and a modern full-stack user experience.
+
+The roadmap above reflects production features that would typically be added as the application evolves toward enterprise readiness.
