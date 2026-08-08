@@ -4,7 +4,8 @@ import Sidebar from "../components/Sidebar"
 import ChatArea from "../components/ChatArea"
 import api from "../services/api"
 import { toast } from "sonner"
-
+import { Menu } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet"
 type Message = {
   role: "user" | "assistant"
   content: string
@@ -139,22 +140,50 @@ function Dashboard() {
 
   return (
     <DashboardLayout
-        sidebarOpen={sidebarOpen}
-        sidebar={
-            <Sidebar
-              sidebarOpen={sidebarOpen}
-              setSidebarOpen={setSidebarOpen}
-              conversations={conversations}
-              activeConversationId={activeConversationId}
-              onSelectConversation={setActiveConversationId}
-              handleDeleteConversation={handleDeleteConversation}
-              onNewChat={handleNewChat}
-              deletedConversations={deletedConversations}
-              handleRestoreConversation={handleRestoreConversation}
-              refreshDeletedConversations={ fetchDeletedConversations}
-            />
-        }
+      sidebarOpen={sidebarOpen}
+      sidebar={
+        !isMobile && (
+          <Sidebar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            onSelectConversation={setActiveConversationId}
+            handleDeleteConversation={handleDeleteConversation}
+            onNewChat={handleNewChat}
+            deletedConversations={deletedConversations}
+            handleRestoreConversation={handleRestoreConversation}
+            refreshDeletedConversations={fetchDeletedConversations}
+            isMobile={false}
+          />
+        )
+      }
     >
+
+      <Sheet>
+        <SheetTrigger asChild>
+          <button className="md:hidden p-2">
+            <Menu size={22} />
+          </button>
+        </SheetTrigger>
+
+        <SheetContent  side="left" className="p-0 w-[100vw] bg-zinc-900 text-white" >
+          <Sidebar
+            sidebarOpen={true}
+            setSidebarOpen={setSidebarOpen}
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            onSelectConversation={setActiveConversationId}
+            handleDeleteConversation={handleDeleteConversation}
+            onNewChat={handleNewChat}
+            deletedConversations={deletedConversations}
+            handleRestoreConversation={handleRestoreConversation}
+            refreshDeletedConversations={fetchDeletedConversations}
+            isMobile={true}
+          />
+        </SheetContent>
+      </Sheet>
+
       <ChatArea
           messages={messages}
           setMessages={setMessages}

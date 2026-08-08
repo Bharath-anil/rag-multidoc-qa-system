@@ -30,6 +30,7 @@ type SidebarProps = {
   onNewChat: () => void
   deletedConversations: Conversation[]
   handleRestoreConversation: ( id: string ) => void
+  isMobile?: boolean
 }
 
 
@@ -43,6 +44,7 @@ function Sidebar({
   onNewChat,
   deletedConversations,
   handleRestoreConversation,
+  isMobile = false,
 }: SidebarProps) {
 
   const [file, setFile] = useState<File | null>(null)
@@ -191,13 +193,11 @@ useEffect(() =>  {
             </h1>
           )}
 
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-zinc-400 hover:text-white"
-          >
-            <PanelLeft size={20} />
-          </button>
-
+          {!isMobile && (
+            <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <PanelLeft size={18} />
+            </button>
+          )}
         </div>
           <div className="border-b border-zinc-800 flex-1 min-h-0 flex flex-col">
               <ConversationSidebar
