@@ -240,22 +240,36 @@ function ChatArea({
 
       <div className="border-t border-zinc-800 p-4">
 
-        <div className="flex gap-3">
+        {!activeConversationId ? (
 
-          <input
-            type="text"
-            disabled={asking}
-            placeholder="Ask a question..."
-            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white outline-none"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
+          <div className="text-center text-zinc-500 text-sm">
+            Create or select a chat to start asking questions.
+          </div>
 
-          <button className="bg-white text-black px-5 rounded-lg font-medium" onClick={handleAsk} disabled={asking}>
-             {asking ? "Thinking..." : "Send"} 
-          </button>
+        ) : (
 
-        </div>
+          <div className="flex gap-3">
+
+            <input
+              type="text"
+              disabled={asking}
+              placeholder="Ask a question..."
+              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white outline-none"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+            />
+
+            <button
+              className="bg-white text-black px-5 rounded-lg font-medium"
+              onClick={handleAsk}
+              disabled={asking}
+            >
+              {asking ? "Thinking..." : "Send"}
+            </button>
+
+          </div>
+
+        )}
 
       </div>
 

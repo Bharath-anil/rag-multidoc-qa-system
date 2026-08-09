@@ -11,10 +11,11 @@ type AuthFormProps = {
   setPassword: (value: string) => void
   handleSubmit: () => void
   buttonText: string
-
   footerText: string
   footerLinkText: string
   footerLinkTo: string
+  minPasswordLength?: number
+  description ?:string
 }
 
 function AuthForm({
@@ -27,7 +28,9 @@ function AuthForm({
   buttonText,
   footerText,
   footerLinkText,
-  footerLinkTo
+  footerLinkTo,
+  minPasswordLength,
+  description
 }: AuthFormProps) {
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
@@ -45,7 +48,10 @@ function AuthForm({
           <Input
             placeholder="Enter username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            minLength={3}
+            maxLength={30}
+            required
+            onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
             className="bg-zinc-800 border-zinc-700"
           />
 
@@ -53,10 +59,16 @@ function AuthForm({
             type="password"
             placeholder="Enter password"
             value={password}
+            minLength={minPasswordLength}
+            required
             onChange={(e) => setPassword(e.target.value)}
             className="bg-zinc-800 border-zinc-700"
           />
-
+          {description && (
+            <p className="text-xs text-zinc-500 text-center">
+              {description}
+            </p>
+          )}
           <Button
             onClick={handleSubmit}
             className="w-full"

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_db
 from app.models.user import User
 from app.core.auth import (  hash_password, verify_password, create_access_token)
-from app.schemas.auth import ( LoginRequest, LoginResponse,  RegisterResponse)
+from app.schemas.auth import ( LoginRequest, LoginResponse,  RegisterResponse,RegisterRequest)
 router = APIRouter(tags=["Authentication"],)
 
 @router.post("/login",
@@ -37,7 +37,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
              responses={
                  400: {"description": "Username already exists."}
              },)
-def register(data: LoginRequest, db: Session = Depends(get_db)):
+def register(data: RegisterRequest, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.username == data.username).first()
 
     if existing:
