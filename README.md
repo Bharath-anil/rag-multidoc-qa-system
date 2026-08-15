@@ -24,6 +24,20 @@ in their own documents.
 
 ------------------------------------------------------------------------
 
+## Demo Workflow
+
+PDF Upload
+→ Text Extraction
+→ Text Cleaning
+→ Chunking
+→ Embedding Generation
+→ Qdrant Vector Storage
+→ Semantic Retrieval
+→ Hybrid Reranking
+→ MMR Diversification
+→ OpenRouter LLM
+→ Grounded Response
+
 # Architecture
 
 ``` text
@@ -47,6 +61,31 @@ FastAPI Backend
 Question → Query Expansion → Semantic Retrieval
         → Hybrid Reranking → MMR → LLM → Response
 ```
+
+# Project Structure
+
+DocuMind/
+├── app/
+│   ├── core/
+│   ├── models/
+│   ├── routers/
+│   ├── schemas/
+│   └── services/
+│
+├── frontend/
+|   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│
+├── alembic/
+├── assets/
+├── Dockerfile
+└── README.md
 
 # Tech Stack
 
@@ -72,6 +111,21 @@ Question → Query Expansion → Semantic Retrieval
 -   sentence-transformers (all-MiniLM-L6-v2)
 -   Qdrant Cloud
 -   OpenRouter
+
+# Key Engineering Concepts Demonstrated
+
+- Retrieval-Augmented Generation (RAG)
+- Vector Databases (Qdrant)
+- Semantic Search
+- Hybrid Retrieval
+- Maximum Marginal Relevance (MMR)
+- JWT Authentication & Authorization
+- REST API Design
+- Database Migrations with Alembic
+- Multi-user Data Isolation
+- Dockerized Backend
+- React State Management
+- Production-style Backend Architecture
 
 # Features
 
@@ -101,7 +155,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
 # Environment Variables
 
 ``` env
@@ -114,7 +167,6 @@ SECRET_KEY=
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
-
 # API
 
   Method   Endpoint
@@ -129,15 +181,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
   DELETE   /documents/{id}
   GET      /health
 
-# Engineering Learnings
+# Design Decisions
 
--   Retrieval quality matters more than model size.
--   Chunking quality directly impacts retrieval.
--   Metadata filtering is essential for multi-user systems.
--   Modular architecture simplifies maintenance.
+- Retrieval quality was prioritized over model size.
+- User data is isolated through JWT-based authentication and metadata filtering.
+- Qdrant Cloud was chosen for scalable vector storage.
+- Modular service architecture improves maintainability and testing.
+- Soft delete and recycle-bin workflows prevent accidental data loss.
 
 ## Screenshots
-
+The following screenshots demonstrate the complete user workflow from authentication to document querying and conversation management.
 ### Login
 ![Login](assets/screenshots/01-login-page.png)
 
@@ -153,6 +206,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 ### Mobile View
 ![Mobile View](assets/screenshots/09-mobile-view.png)
 
+# Current Capabilities
+
+- Multi-user document management
+- PDF ingestion and processing pipeline
+- Semantic document retrieval
+- Query expansion and hybrid reranking
+- AI-generated grounded answers
+- Source-aware responses
+- Conversation history management
+- Soft delete and restore workflows
+- Responsive desktop and mobile interface
+- Dockerized backend deployment
 
 # Future Improvements
 
