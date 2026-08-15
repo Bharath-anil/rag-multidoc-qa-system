@@ -145,13 +145,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 ![Dashboard](assets/screenshots/05-documents-uploaded.png)
 
 ### AI Chat
-![Chat](assets/screenshots/06-chat-answer-sources.png)
+![Chat](assets/screenshots/07-chat-answer-sources.png)
 
 ### Recycle Bin
-![Recycle Bin](assets/screenshots/07-recycle-bin.png)
+![Recycle Bin](assets/screenshots/08-recycle-bin.png)
 
 ### Mobile View
-![Mobile View](assets/screenshots/08-mobile-view.png)
+![Mobile View](assets/screenshots/09-mobile-view.png)
 
 
 # Future Improvements
