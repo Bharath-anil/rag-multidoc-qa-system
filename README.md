@@ -64,6 +64,7 @@ Question → Query Expansion → Semantic Retrieval
 
 # Project Structure
 
+```text
 DocuMind/
 ├── app/
 │   ├── core/
@@ -73,7 +74,7 @@ DocuMind/
 │   └── services/
 │
 ├── frontend/
-|   ├── src/
+│   ├── src/
 │   │   ├── assets/
 │   │   ├── components/
 │   │   ├── lib/
@@ -85,7 +86,10 @@ DocuMind/
 ├── alembic/
 ├── assets/
 ├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
 └── README.md
+```
 
 # Tech Stack
 
@@ -297,11 +301,6 @@ The following screenshots demonstrate the complete user workflow from authentica
 - Unit tests
 - Integration tests
 - End-to-end testing
-- Load and performance testing
-- Security testing
-- API contract testing
-- Automated code quality checks
-
 
 # Engineering Goals
 
