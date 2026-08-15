@@ -136,6 +136,24 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 -   Metadata filtering is essential for multi-user systems.
 -   Modular architecture simplifies maintenance.
 
+## Screenshots
+
+### Login
+![Login](assets/screenshots/01-login-page.png)
+
+### Dashboard
+![Dashboard](assets/screenshots/05-documents-uploaded.png)
+
+### AI Chat
+![Chat](assets/screenshots/06-chat-answer-sources.png)
+
+### Recycle Bin
+![Recycle Bin](assets/screenshots/07-recycle-bin.png)
+
+### Mobile View
+![Mobile View](assets/screenshots/08-mobile-view.png)
+
+
 # Future Improvements
 
 ## Authentication & Security
